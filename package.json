@@ -106,7 +106,7 @@
             },
             {
                 "command": "csharpApiExplorer.testApi",
-                "title": "Test API"
+                "title": "测试 API"
             }
         ],
         "menus": {

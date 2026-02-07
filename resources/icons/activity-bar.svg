@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+  <!-- 路由树形结构 -->
+  <!-- 顶部节点 -->
+  <circle cx="12" cy="4" r="2"/>
+  
+  <!-- 主干线 -->
+  <rect x="11" y="6" width="2" height="6" rx="1"/>
+  
+  <!-- 左侧分支 -->
+  <path d="M 12 12 L 6 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="6" cy="17" r="2"/>
+  
+  <!-- 中间分支 -->
+  <rect x="11" y="12" width="2" height="4" rx="1"/>
+  <circle cx="12" cy="18" r="2"/>
+  
+  <!-- 右侧分支 -->
+  <path d="M 12 12 L 18 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="18" cy="17" r="2"/>
+</svg>

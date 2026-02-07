@@ -1,0 +1,204 @@
+{
+    "name": "vscode-api-navigator",
+    "displayName": "API Navigator For C#",
+    "description": "One-click jump to C# ASP.NET API routes - Navigate and explore your API code effortlessly",
+    "version": "0.0.3",
+    "publisher": "dankit",
+    "icon": "resources/icon.png",
+    "repository": {
+        "type": "git",
+        "url": "https://gitee.com/dankit/vscode-api-navigator"
+    },
+    "bugs": {
+        "url": "https://gitee.com/dankit/vscode-api-navigator/issues"
+    },
+    "homepage": "https://gitee.com/dankit/vscode-api-navigator#readme",
+    "license": "MIT",
+    "keywords": [
+        "api",
+        "route",
+        "navigator",
+        "csharp",
+        "aspnet",
+        "dotnet",
+        "controller",
+        "rest api",
+        "web api"
+    ],
+    "galleryBanner": {
+        "color": "#007ACC",
+        "theme": "dark"
+    },
+    "engines": {
+        "vscode": "^1.85.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Other"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "apiNavigator",
+                    "title": "API Navigator",
+                    "icon": "resources/icons/activity-bar.svg"
+                }
+            ]
+        },
+        "views": {
+            "apiNavigator": [
+                {
+                    "id": "apiNavigator.routesList",
+                    "name": "路由列表",
+                    "visibility": "visible",
+                    "type": "tree"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "apiNavigator.refresh",
+                "title": "刷新路由",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "apiNavigator.search",
+                "title": "搜索路由",
+                "icon": "$(search)"
+            },
+            {
+                "command": "apiNavigator.clearSearch",
+                "title": "清除搜索",
+                "icon": "$(clear-all)"
+            },
+            {
+                "command": "apiNavigator.config",
+                "title": "变量配置",
+                "icon": "$(gear)"
+            },
+            {
+                "command": "apiNavigator.setAlias",
+                "title": "设置别名"
+            },
+            {
+                "command": "apiNavigator.clearAlias",
+                "title": "清除别名"
+            },
+            {
+                "command": "apiNavigator.copyRoute",
+                "title": "复制路由"
+            },
+            {
+                "command": "apiNavigator.startDebugging",
+                "title": "启动调试"
+            },
+            {
+                "command": "apiNavigator.runProject",
+                "title": "运行项目"
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "apiNavigator.search",
+                    "when": "view == apiNavigator.routesList",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "apiNavigator.clearSearch",
+                    "when": "view == apiNavigator.routesList",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "apiNavigator.config",
+                    "when": "view == apiNavigator.routesList",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "apiNavigator.refresh",
+                    "when": "view == apiNavigator.routesList",
+                    "group": "navigation@4"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "apiNavigator.setAlias",
+                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "group": "edit@1"
+                },
+                {
+                    "command": "apiNavigator.clearAlias",
+                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "group": "edit@2"
+                },
+                {
+                    "command": "apiNavigator.copyRoute",
+                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "group": "edit@3"
+                },
+                {
+                    "command": "apiNavigator.startDebugging",
+                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "group": "debug@1"
+                },
+                {
+                    "command": "apiNavigator.runProject",
+                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "group": "debug@2"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "API Navigator",
+            "properties": {
+                "apiNavigator.excludePatterns": {
+                    "type": "array",
+                    "default": [
+                        "**/bin/**",
+                        "**/obj/**",
+                        "**/node_modules/**",
+                        "**/.vs/**",
+                        "**/.git/**",
+                        "**/.github/**",
+                        "**/.idea/**",
+                        "**/.vscode/**",
+                        "**/dist/**",
+                        "**/out/**",
+                        "**/build/**",
+                        "**/wwwroot/lib/**"
+                    ],
+                    "description": "排除的文件模式"
+                },
+                "apiNavigator.sortBy": {
+                    "type": "string",
+                    "enum": [
+                        "route",
+                        "controller",
+                        "httpVerb"
+                    ],
+                    "default": "route",
+                    "description": "路由排序方式（有别名的路由始终排在前面）"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.85.0",
+        "@types/node": "20.x",
+        "@typescript-eslint/eslint-plugin": "^6.15.0",
+        "@typescript-eslint/parser": "^6.15.0",
+        "eslint": "^8.56.0",
+        "typescript": "^5.3.3",
+        "@vscode/test-electron": "^2.3.8"
+    }
+}

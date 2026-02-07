@@ -245,11 +245,17 @@ export class ApiEndpointDetector {
             
             if (fromAttrMatch) {
                 const attr = fromAttrMatch[1];
-                if (attr === 'Query') source = ParameterSource.Query;
-                else if (attr === 'Body') source = ParameterSource.Body;
-                else if (attr === 'Header') source = ParameterSource.Header;
-                else if (attr === 'Route') source = ParameterSource.Path;
-                else source = ParameterSource.Query; // 默认
+                if (attr === 'Query') {
+                    source = ParameterSource.Query;
+                } else if (attr === 'Body') {
+                    source = ParameterSource.Body;
+                } else if (attr === 'Header') {
+                    source = ParameterSource.Header;
+                } else if (attr === 'Route') {
+                    source = ParameterSource.Path;
+                } else {
+                    source = ParameterSource.Query; // 默认
+                }
             } else if (pathParams.includes(paramName.toLowerCase())) {
                 // 如果参数名在路由模板中，则是路径参数
                 source = ParameterSource.Path;

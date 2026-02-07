@@ -886,7 +886,7 @@ export class ApiTestPanel {
 
                 // Update status
                 const statusClass = data.statusCode >= 200 && data.statusCode < 300 ? 'success' : 'error';
-                const statusText = data.statusCode >= 200 && data.statusCode < 300 ? '200 OK' : data.statusCode + ' Error';
+                const statusText = data.statusCode + ' ' + (data.statusCode >= 200 && data.statusCode < 300 ? 'OK' : 'Error');
                 const statusValue = document.getElementById('statusValue');
                 statusValue.textContent = statusText;
                 statusValue.className = 'status-value ' + statusClass;
@@ -908,7 +908,7 @@ export class ApiTestPanel {
                 }
 
                 // Generate line numbers
-                const lines = formattedBody.split('\\n');
+                const lines = formattedBody.split('\\\\n');
                 const lineNumbers = lines.map((_, i) => '<span class="line-number">' + (i + 1) + '</span>').join('');
                 document.getElementById('lineNumbers').innerHTML = lineNumbers;
                 

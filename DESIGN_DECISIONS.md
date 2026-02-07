@@ -218,7 +218,7 @@ document.querySelectorAll('.response-tab').forEach(tab => {
 The static HTML structure approach is the better choice in most cases, especially for API testing panels that require frequent updates with a relatively fixed structure. While the initial HTML is slightly larger, the performance improvements, better user experience, and enhanced code maintainability make it well worth it.
 
 ### 关键改进 | Key Improvements
-1. ⚡ **性能提升**: 减少70%以上的DOM操作
+1. ⚡ **性能提升**: 大幅减少DOM操作（不需要重建整个DOM树）
 2. 🎯 **用户体验**: 保持滚动位置和UI状态
 3. 🔧 **可维护性**: 结构和数据分离，代码更清晰
 4. 🎨 **可扩展性**: 更容易添加新功能和动画效果

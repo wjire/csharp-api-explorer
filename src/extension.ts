@@ -4,6 +4,9 @@ import { RouteParser } from './routeParser';
 import { AliasManager } from './aliasManager';
 import { ConfigManager } from './configManager';
 import { lang } from './languageManager';
+import { ApiEndpointDetector } from './apiEndpointDetector';
+import { ApiCodeLensProvider } from './apiCodeLensProvider';
+import { ApiTestPanel } from './apiTestPanel';
 
 const activeProjects = new Set<string>();
 
@@ -32,6 +35,22 @@ export function activate(context: vscode.ExtensionContext) {
     const configManager = new ConfigManager(workspaceRoot);
     const routeParser = new RouteParser();
     const routeProvider = new RouteProvider(aliasManager, configManager);
+
+    // 初始化 API 测试相关组件
+    const apiDetector = new ApiEndpointDetector();
+    const apiCodeLensProvider = new ApiCodeLensProvider(apiDetector);
+
+    // 注册 CodeLens Provider
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider('csharp', apiCodeLensProvider)
+    );
+
+    // 注册 API 测试命令
+    context.subscriptions.push(
+        vscode.commands.registerCommand('csharpApiExplorer.testApi', (apiInfo) => {
+            ApiTestPanel.createOrShow(context.extensionUri, apiInfo);
+        })
+    );
 
     // 创建TreeView
     const treeView = vscode.window.createTreeView('csharpApiExplorer.routesList', {

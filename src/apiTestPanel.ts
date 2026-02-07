@@ -1,0 +1,706 @@
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
+import { ApiEndpoint, ParameterSource } from './models/apiEndpoint';
+
+/**
+ * API 测试面板
+ * 管理 WebView 面板，处理 API 测试请求
+ */
+export class ApiTestPanel {
+    public static currentPanel: ApiTestPanel | undefined;
+    private readonly panel: vscode.WebviewPanel;
+    private readonly extensionUri: vscode.Uri;
+    private disposables: vscode.Disposable[] = [];
+
+    /**
+     * 创建或显示测试面板
+     */
+    public static createOrShow(extensionUri: vscode.Uri, apiEndpoint: ApiEndpoint) {
+        const column = vscode.window.activeTextEditor
+            ? vscode.window.activeTextEditor.viewColumn
+            : undefined;
+
+        // 如果面板已存在，显示它
+        if (ApiTestPanel.currentPanel) {
+            ApiTestPanel.currentPanel.panel.reveal(column);
+            ApiTestPanel.currentPanel.updateApiEndpoint(apiEndpoint);
+            return;
+        }
+
+        // 创建新面板
+        const panel = vscode.window.createWebviewPanel(
+            'apiTestPanel',
+            '🚀 API Test',
+            column || vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+                localResourceRoots: [
+                    vscode.Uri.joinPath(extensionUri, 'out', 'webview')
+                ]
+            }
+        );
+
+        ApiTestPanel.currentPanel = new ApiTestPanel(panel, extensionUri, apiEndpoint);
+    }
+
+    private constructor(
+        panel: vscode.WebviewPanel,
+        extensionUri: vscode.Uri,
+        apiEndpoint: ApiEndpoint
+    ) {
+        this.panel = panel;
+        this.extensionUri = extensionUri;
+
+        // 设置 HTML 内容
+        this.updateHtmlContent(apiEndpoint);
+
+        // 监听面板关闭事件
+        this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
+
+        // 处理来自 WebView 的消息
+        this.panel.webview.onDidReceiveMessage(
+            message => this.handleMessage(message),
+            null,
+            this.disposables
+        );
+    }
+
+    /**
+     * 更新 API 端点
+     */
+    private updateApiEndpoint(apiEndpoint: ApiEndpoint) {
+        this.panel.webview.postMessage({
+            type: 'updateApiEndpoint',
+            data: apiEndpoint
+        });
+    }
+
+    /**
+     * 处理来自 WebView 的消息
+     */
+    private async handleMessage(message: any) {
+        switch (message.type) {
+            case 'sendRequest':
+                await this.sendHttpRequest(message.data);
+                break;
+        }
+    }
+
+    /**
+     * 发送 HTTP 请求
+     */
+    private async sendHttpRequest(requestData: {
+        method: string;
+        url: string;
+        headers: Record<string, string>;
+        body?: string;
+    }) {
+        const startTime = Date.now();
+
+        try {
+            const https = require('https');
+            const http = require('http');
+            const urlModule = require('url');
+
+            const parsedUrl = urlModule.parse(requestData.url);
+            const isHttps = parsedUrl.protocol === 'https:';
+            const httpModule = isHttps ? https : http;
+
+            // 准备请求选项
+            const options: any = {
+                method: requestData.method,
+                hostname: parsedUrl.hostname,
+                port: parsedUrl.port || (isHttps ? 443 : 80),
+                path: parsedUrl.path,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...requestData.headers
+                }
+            };
+
+            // 如果有 body，设置 Content-Length
+            if (requestData.body) {
+                options.headers['Content-Length'] = Buffer.byteLength(requestData.body);
+            }
+
+            // 发送请求
+            const response = await new Promise<{
+                statusCode: number;
+                headers: Record<string, string>;
+                body: string;
+            }>((resolve, reject) => {
+                const req = httpModule.request(options, (res: any) => {
+                    let body = '';
+
+                    res.on('data', (chunk: any) => {
+                        body += chunk;
+                    });
+
+                    res.on('end', () => {
+                        resolve({
+                            statusCode: res.statusCode,
+                            headers: res.headers,
+                            body
+                        });
+                    });
+                });
+
+                req.on('error', (error: Error) => {
+                    reject(error);
+                });
+
+                // 写入 body
+                if (requestData.body) {
+                    req.write(requestData.body);
+                }
+
+                req.end();
+            });
+
+            const duration = Date.now() - startTime;
+
+            // 发送响应到 WebView
+            this.panel.webview.postMessage({
+                type: 'requestComplete',
+                data: {
+                    success: true,
+                    statusCode: response.statusCode,
+                    headers: response.headers,
+                    body: response.body,
+                    duration
+                }
+            });
+
+        } catch (error: any) {
+            const duration = Date.now() - startTime;
+
+            // 发送错误到 WebView
+            this.panel.webview.postMessage({
+                type: 'requestComplete',
+                data: {
+                    success: false,
+                    error: error.message,
+                    duration
+                }
+            });
+        }
+    }
+
+    /**
+     * 更新 HTML 内容
+     */
+    private updateHtmlContent(apiEndpoint: ApiEndpoint) {
+        this.panel.webview.html = this.getHtmlContent(apiEndpoint);
+    }
+
+    /**
+     * 获取 HTML 内容
+     */
+    private getHtmlContent(apiEndpoint: ApiEndpoint): string {
+        // 准备参数数据
+        const headerParams = apiEndpoint.parameters.filter(p => p.source === ParameterSource.Header);
+        const queryParams = apiEndpoint.parameters.filter(p => p.source === ParameterSource.Query);
+        const pathParams = apiEndpoint.parameters.filter(p => p.source === ParameterSource.Path);
+        
+        return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--vscode-font-family);
+            font-size: var(--vscode-font-size);
+            color: var(--vscode-foreground);
+            background-color: var(--vscode-editor-background);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .request-section {
+            background-color: var(--vscode-editor-background);
+            border: 1px solid var(--vscode-panel-border);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .url-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .http-method {
+            padding: 8px 16px;
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border-radius: 4px;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .http-method.GET { background-color: #61affe; }
+        .http-method.POST { background-color: #49cc90; }
+        .http-method.PUT { background-color: #fca130; }
+        .http-method.DELETE { background-color: #f93e3e; }
+
+        .url-input {
+            flex: 1;
+            padding: 8px 12px;
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            border: 1px solid var(--vscode-input-border);
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .send-button {
+            padding: 8px 24px;
+            background-color: #49cc90;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .send-button:hover {
+            background-color: #3eb878;
+        }
+
+        .send-button:active {
+            background-color: #2fa866;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--vscode-panel-border);
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background-color: var(--vscode-list-hoverBackground);
+        }
+
+        .tab.active {
+            border-bottom-color: var(--vscode-button-background);
+            color: var(--vscode-button-background);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .param-list {
+            margin-bottom: 10px;
+        }
+
+        .param-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .param-input {
+            flex: 1;
+            padding: 6px 10px;
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            border: 1px solid var(--vscode-input-border);
+            border-radius: 4px;
+        }
+
+        .param-label {
+            width: 100px;
+            font-weight: bold;
+        }
+
+        .remove-button {
+            padding: 6px 12px;
+            background-color: var(--vscode-button-secondaryBackground);
+            color: var(--vscode-button-secondaryForeground);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-button {
+            padding: 6px 12px;
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .body-editor {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            border: 1px solid var(--vscode-input-border);
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        .response-section {
+            background-color: var(--vscode-editor-background);
+            border: 1px solid var(--vscode-panel-border);
+            border-radius: 4px;
+            padding: 15px;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--vscode-panel-border);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status-badge.success {
+            background-color: #49cc90;
+            color: white;
+        }
+
+        .status-badge.error {
+            background-color: #f93e3e;
+            color: white;
+        }
+
+        .duration {
+            color: var(--vscode-descriptionForeground);
+        }
+
+        .response-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--vscode-panel-border);
+            margin-bottom: 15px;
+        }
+
+        .response-body {
+            background-color: var(--vscode-input-background);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--vscode-descriptionForeground);
+            padding: 40px;
+        }
+
+        .token-input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            border: 1px solid var(--vscode-input-border);
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .hint {
+            color: var(--vscode-descriptionForeground);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🚀 API Test</h2>
+        </div>
+
+        <div class="request-section">
+            <div class="url-section">
+                <div class="http-method ${apiEndpoint.httpMethod}">${apiEndpoint.httpMethod}</div>
+                <input type="text" class="url-input" id="urlInput" value="${apiEndpoint.fullUrl || apiEndpoint.routeTemplate}" />
+                <button class="send-button" id="sendButton">Send</button>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" data-tab="auth">Auth</div>
+                <div class="tab" data-tab="headers">Headers</div>
+                <div class="tab" data-tab="query">Query</div>
+                <div class="tab" data-tab="body">Body</div>
+            </div>
+
+            <div id="authTab" class="tab-content active">
+                <div class="param-row">
+                    <span class="param-label">Bearer Token:</span>
+                    <input type="text" class="token-input" id="tokenInput" placeholder="Enter your bearer token" />
+                </div>
+                <div class="hint">Enter a Bearer token for authentication (optional)</div>
+            </div>
+
+            <div id="headersTab" class="tab-content">
+                <div class="param-list" id="headersList">
+                    ${headerParams.map(p => `
+                        <div class="param-row">
+                            <input type="text" class="param-input" placeholder="Key" value="${p.name}" />
+                            <input type="text" class="param-input" placeholder="Value" />
+                            <button class="remove-button" onclick="removeRow(this)">Remove</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="add-button" onclick="addHeaderRow()">Add Header</button>
+            </div>
+
+            <div id="queryTab" class="tab-content">
+                <div class="param-list" id="queryList">
+                    ${queryParams.map(p => `
+                        <div class="param-row">
+                            <input type="text" class="param-input" placeholder="Key" value="${p.name}" />
+                            <input type="text" class="param-input" placeholder="Value" />
+                            <button class="remove-button" onclick="removeRow(this)">Remove</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="add-button" onclick="addQueryRow()">Add Query Parameter</button>
+            </div>
+
+            <div id="bodyTab" class="tab-content">
+                <textarea class="body-editor" id="bodyEditor" placeholder="Enter JSON body here..."></textarea>
+                <div class="hint">Enter raw JSON for the request body</div>
+            </div>
+        </div>
+
+        <div class="response-section">
+            <h3>Response</h3>
+            <div id="responseContent" class="empty-state">
+                <p>No response yet. Click "Send" to make a request.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                // Update tab styles
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update content
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(tabName + 'Tab').classList.add('active');
+            });
+        });
+
+        // Add header row
+        function addHeaderRow() {
+            const list = document.getElementById('headersList');
+            const row = document.createElement('div');
+            row.className = 'param-row';
+            row.innerHTML = \`
+                <input type="text" class="param-input" placeholder="Key" />
+                <input type="text" class="param-input" placeholder="Value" />
+                <button class="remove-button" onclick="removeRow(this)">Remove</button>
+            \`;
+            list.appendChild(row);
+        }
+
+        // Add query row
+        function addQueryRow() {
+            const list = document.getElementById('queryList');
+            const row = document.createElement('div');
+            row.className = 'param-row';
+            row.innerHTML = \`
+                <input type="text" class="param-input" placeholder="Key" />
+                <input type="text" class="param-input" placeholder="Value" />
+                <button class="remove-button" onclick="removeRow(this)">Remove</button>
+            \`;
+            list.appendChild(row);
+        }
+
+        // Remove row
+        function removeRow(button) {
+            button.parentElement.remove();
+        }
+
+        // Send request
+        document.getElementById('sendButton').addEventListener('click', async () => {
+            const method = '${apiEndpoint.httpMethod}';
+            const url = document.getElementById('urlInput').value;
+            const token = document.getElementById('tokenInput').value;
+            
+            // Collect headers
+            const headers = {};
+            document.querySelectorAll('#headersList .param-row').forEach(row => {
+                const inputs = row.querySelectorAll('.param-input');
+                const key = inputs[0].value.trim();
+                const value = inputs[1].value.trim();
+                if (key) {
+                    headers[key] = value;
+                }
+            });
+
+            // Add bearer token if provided
+            if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+            }
+
+            // Collect query parameters and append to URL
+            const queryParams = [];
+            document.querySelectorAll('#queryList .param-row').forEach(row => {
+                const inputs = row.querySelectorAll('.param-input');
+                const key = inputs[0].value.trim();
+                const value = inputs[1].value.trim();
+                if (key) {
+                    queryParams.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+                }
+            });
+
+            let finalUrl = url;
+            if (queryParams.length > 0) {
+                const separator = url.includes('?') ? '&' : '?';
+                finalUrl = url + separator + queryParams.join('&');
+            }
+
+            // Get body
+            let body = undefined;
+            if (method === 'POST' || method === 'PUT') {
+                const bodyText = document.getElementById('bodyEditor').value.trim();
+                if (bodyText) {
+                    body = bodyText;
+                }
+            }
+
+            // Show loading state
+            document.getElementById('responseContent').innerHTML = '<p class="empty-state">Sending request...</p>';
+
+            // Send message to extension
+            vscode.postMessage({
+                type: 'sendRequest',
+                data: {
+                    method,
+                    url: finalUrl,
+                    headers,
+                    body
+                }
+            });
+        });
+
+        // Handle messages from extension
+        window.addEventListener('message', event => {
+            const message = event.data;
+            
+            if (message.type === 'requestComplete') {
+                displayResponse(message.data);
+            } else if (message.type === 'updateApiEndpoint') {
+                updateApiEndpoint(message.data);
+            }
+        });
+
+        function displayResponse(data) {
+            const container = document.getElementById('responseContent');
+            
+            if (data.success) {
+                const statusClass = data.statusCode >= 200 && data.statusCode < 300 ? 'success' : 'error';
+                
+                // Try to format JSON
+                let formattedBody = data.body;
+                try {
+                    const jsonObj = JSON.parse(data.body);
+                    formattedBody = JSON.stringify(jsonObj, null, 2);
+                } catch {
+                    // Not JSON, keep as is
+                }
+
+                container.innerHTML = \`
+                    <div class="response-header">
+                        <span class="status-badge \${statusClass}">Status: \${data.statusCode}</span>
+                        <span class="duration">Time: \${data.duration}ms</span>
+                    </div>
+                    <div class="response-tabs">
+                        <div class="tab active">Body</div>
+                    </div>
+                    <div class="response-body">\${formattedBody}</div>
+                \`;
+            } else {
+                container.innerHTML = \`
+                    <div class="response-header">
+                        <span class="status-badge error">Error</span>
+                        <span class="duration">Time: \${data.duration}ms</span>
+                    </div>
+                    <div class="response-body" style="color: var(--vscode-errorForeground);">\${data.error}</div>
+                \`;
+            }
+        }
+
+        function updateApiEndpoint(apiEndpoint) {
+            document.getElementById('urlInput').value = apiEndpoint.fullUrl || apiEndpoint.routeTemplate;
+        }
+    </script>
+</body>
+</html>`;
+    }
+
+    /**
+     * 释放资源
+     */
+    public dispose() {
+        ApiTestPanel.currentPanel = undefined;
+
+        this.panel.dispose();
+
+        while (this.disposables.length) {
+            const disposable = this.disposables.pop();
+            if (disposable) {
+                disposable.dispose();
+            }
+        }
+    }
+}

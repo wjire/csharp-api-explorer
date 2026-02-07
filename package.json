@@ -103,6 +103,10 @@
             {
                 "command": "csharpApiExplorer.runProject",
                 "title": "运行项目"
+            },
+            {
+                "command": "csharpApiExplorer.testApi",
+                "title": "Test API"
             }
         ],
         "menus": {

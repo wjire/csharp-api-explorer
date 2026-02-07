@@ -654,8 +654,64 @@ export class ApiTestPanel {
 
             <div class="right-panel">
                 <div class="response-section">
-                    <div id="responseContent" class="empty-state">
-                        <p>No response yet. Click "Send" to make a request.</p>
+                    <div id="responseContent">
+                        <!-- Empty State -->
+                        <div id="emptyState" class="empty-state">
+                            <p>No response yet. Click "Send" to make a request.</p>
+                        </div>
+                        
+                        <!-- Response Display (initially hidden) -->
+                        <div id="responseDisplay" style="display: none; height: 100%; flex-direction: column;">
+                            <div class="status-bar">
+                                <div class="status-item">
+                                    <span class="status-label">Status:</span>
+                                    <span class="status-value" id="statusValue"></span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Size:</span>
+                                    <span class="status-value info" id="sizeValue"></span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Time:</span>
+                                    <span class="status-value" id="timeValue"></span>
+                                </div>
+                            </div>
+                            <div class="response-tabs">
+                                <div class="response-tab active" data-response-tab="body">Response</div>
+                                <div class="response-tab" data-response-tab="headers">
+                                    Headers
+                                    <span class="response-tab-badge" id="headerCount">0</span>
+                                </div>
+                            </div>
+                            <div class="response-content">
+                                <div class="response-tab-panel active" id="bodyPanel">
+                                    <div class="response-body">
+                                        <div class="line-numbers" id="lineNumbers"></div>
+                                        <div class="code-wrapper">
+                                            <pre class="code-content"><code id="responseBody"></code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="response-tab-panel" id="headersPanel">
+                                    <div class="response-headers" id="responseHeaders"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Error State (initially hidden) -->
+                        <div id="errorState" style="display: none;">
+                            <div class="status-bar">
+                                <div class="status-item">
+                                    <span class="status-label">Status:</span>
+                                    <span class="status-value error">Error</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Time:</span>
+                                    <span class="status-value" id="errorTime"></span>
+                                </div>
+                            </div>
+                            <div class="response-body" style="color: var(--vscode-errorForeground); padding: 20px;" id="errorMessage"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -677,6 +733,21 @@ export class ApiTestPanel {
                 // Update content
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 document.getElementById(tabName + 'Tab').classList.add('active');
+            });
+        });
+
+        // Response tab switching (for static response display)
+        document.querySelectorAll('.response-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.responseTab;
+                
+                // Update tab styles
+                document.querySelectorAll('.response-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update content
+                document.querySelectorAll('.response-tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(tabName + 'Panel').classList.add('active');
             });
         });
 
@@ -760,7 +831,7 @@ export class ApiTestPanel {
             }
 
             // Show loading state
-            document.getElementById('responseContent').innerHTML = '<p class="empty-state">Sending request...</p>';
+            showLoadingState();
 
             // Send message to extension
             vscode.postMessage({
@@ -785,25 +856,53 @@ export class ApiTestPanel {
             }
         });
 
+        // Helper function to show loading state
+        function showLoadingState() {
+            document.getElementById('emptyState').style.display = 'flex';
+            document.getElementById('emptyState').innerHTML = '<p>Sending request...</p>';
+            document.getElementById('responseDisplay').style.display = 'none';
+            document.getElementById('errorState').style.display = 'none';
+        }
+
         function displayResponse(data) {
-            const container = document.getElementById('responseContent');
+            // Escape HTML helper
+            const escapeHtml = (text) => {
+                return text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            };
             
             if (data.success) {
+                // Hide empty and error states
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'none';
+                
+                // Show response display
+                const responseDisplay = document.getElementById('responseDisplay');
+                responseDisplay.style.display = 'flex';
 
-                container.classList.remove('empty-state');
-                container.classList.add('sended-state');
-
+                // Update status
                 const statusClass = data.statusCode >= 200 && data.statusCode < 300 ? 'success' : 'error';
                 const statusText = data.statusCode >= 200 && data.statusCode < 300 ? '200 OK' : data.statusCode + ' Error';
+                const statusValue = document.getElementById('statusValue');
+                statusValue.textContent = statusText;
+                statusValue.className = 'status-value ' + statusClass;
+                
+                // Update size
+                const bodySize = new Blob([data.body]).size;
+                document.getElementById('sizeValue').textContent = bodySize + ' Bytes';
+                
+                // Update time
+                document.getElementById('timeValue').textContent = data.duration + ' ms';
                 
                 // Try to format JSON
                 let formattedBody = data.body;
-                let bodySize = new Blob([data.body]).size;
-                let isJson = false;
                 try {
                     const jsonObj = JSON.parse(data.body);
                     formattedBody = JSON.stringify(jsonObj, null, 2);
-                    isJson = true;
                 } catch {
                     // Not JSON, keep as is
                 }
@@ -811,92 +910,38 @@ export class ApiTestPanel {
                 // Generate line numbers
                 const lines = formattedBody.split('\\n');
                 const lineNumbers = lines.map((_, i) => '<span class="line-number">' + (i + 1) + '</span>').join('');
-
-                // Escape HTML in response body to safely display it
-                const escapeHtml = (text) => {
-                    return text
-                        .replace(/&/g, '&amp;')
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;')
-                        .replace(/"/g, '&quot;')
-                        .replace(/'/g, '&#039;');
-                };
+                document.getElementById('lineNumbers').innerHTML = lineNumbers;
+                
+                // Update response body
                 const escapedBody = escapeHtml(formattedBody);
-
-                // Prepare headers
+                document.getElementById('responseBody').innerHTML = escapedBody;
+                
+                // Update headers
                 const headerCount = Object.keys(data.headers || {}).length;
+                document.getElementById('headerCount').textContent = headerCount;
+                
                 const headersHtml = Object.entries(data.headers || {}).map(([key, value]) => \`
                     <div class="header-item">
                         <div class="header-key">\${escapeHtml(key)}:</div>
                         <div class="header-value">\${escapeHtml(String(value))}</div>
                     </div>
                 \`).join('');
-
-                container.innerHTML = \`
-                    <div class="status-bar">
-                        <div class="status-item">
-                            <span class="status-label">Status:</span>
-                            <span class="status-value \${statusClass}">\${statusText}</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">Size:</span>
-                            <span class="status-value info">\${bodySize} Bytes</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">Time:</span>
-                            <span class="status-value">\${data.duration} ms</span>
-                        </div>
-                    </div>
-                    <div class="response-tabs">
-                        <div class="response-tab active" data-response-tab="body">Response</div>
-                        <div class="response-tab" data-response-tab="headers">
-                            Headers
-                            <span class="response-tab-badge">\${headerCount}</span>
-                        </div>
-                    </div>
-                    <div class="response-content">
-                        <div class="response-tab-panel active" id="bodyPanel">
-                            <div class="response-body">
-                                <div class="line-numbers">\${lineNumbers}</div>
-                                <div class="code-wrapper">
-                                    <pre class="code-content"><code>\${escapedBody}</code></pre>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="response-tab-panel" id="headersPanel">
-                            <div class="response-headers">\${headersHtml}</div>
-                        </div>
-                    </div>
-                \`;
-
-                // Add tab switching for response tabs
-                container.querySelectorAll('.response-tab').forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        const tabName = tab.dataset.responseTab;
-                        
-                        // Update tab styles
-                        container.querySelectorAll('.response-tab').forEach(t => t.classList.remove('active'));
-                        tab.classList.add('active');
-
-                        // Update content
-                        container.querySelectorAll('.response-tab-panel').forEach(p => p.classList.remove('active'));
-                        container.querySelector('#' + tabName + 'Panel').classList.add('active');
-                    });
-                });
+                document.getElementById('responseHeaders').innerHTML = headersHtml;
+                
+                // Reset to body tab
+                document.querySelectorAll('.response-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-response-tab="body"]').classList.add('active');
+                document.querySelectorAll('.response-tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('bodyPanel').classList.add('active');
+                
             } else {
-                container.innerHTML = \`
-                    <div class="status-bar">
-                        <div class="status-item">
-                            <span class="status-label">Status:</span>
-                            <span class="status-value error">Error</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">Time:</span>
-                            <span class="status-value">\${data.duration} ms</span>
-                        </div>
-                    </div>
-                    <div class="response-body" style="color: var(--vscode-errorForeground); padding: 20px;">\${data.error}</div>
-                \`;
+                // Show error state
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('responseDisplay').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+                
+                document.getElementById('errorTime').textContent = data.duration + ' ms';
+                document.getElementById('errorMessage').textContent = data.error;
             }
         }
 

@@ -46,6 +46,12 @@ packages/
 
 # VS Code 扩展
 *.vsix
+*.code-workspace
+.vscode/*.db
+.vscode/*.log
+.vscode/*.tsbuildinfo
+node_modules/
+out/
 
 ## ==================== 日志和缓存 ====================
 *.log

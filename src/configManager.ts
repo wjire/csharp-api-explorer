@@ -7,7 +7,7 @@ import { VariableConfig } from './models/route';
  * 配置文件格式：{ "version:apiversion": "2.0" }
  */
 export class ConfigManager {
-    private readonly configFileName = 'api-navigator-variables.json';
+    private readonly configFileName = 'csharp-api-explorer-variables.json';
     private config: VariableConfig = {};
 
     constructor(private workspaceRoot: string) { }

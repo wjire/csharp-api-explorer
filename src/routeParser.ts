@@ -24,7 +24,7 @@ export class RouteParser {
      * 解析工作区中的所有 C# 文件
      */
     async parseWorkspace(): Promise<RouteInfo[]> {
-        const config = vscode.workspace.getConfiguration('apiNavigator');
+        const config = vscode.workspace.getConfiguration('csharpApiExplorer');
         const excludePatterns = config.get<string[]>('excludePatterns', [
             "**/bin/**",
             "**/obj/**",

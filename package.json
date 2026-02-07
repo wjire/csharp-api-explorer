@@ -1,29 +1,35 @@
 {
-    "name": "vscode-api-navigator",
-    "displayName": "API Navigator For C#",
-    "description": "One-click jump to C# ASP.NET API routes - Navigate and explore your API code effortlessly",
-    "version": "0.0.3",
+    "name": "csharp-api-explorer",
+    "displayName": "C# API Explorer",
+    "description": "A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and debug your API routes effortlessly.",
+    "version": "1.0.0",
     "publisher": "dankit",
-    "icon": "resources/icon.png",
+    "icon": "resources/icons/icon.png",
     "repository": {
         "type": "git",
-        "url": "https://gitee.com/dankit/vscode-api-navigator"
+        "url": "https://gitee.com/dankit/csharp-api-explorer"
     },
     "bugs": {
-        "url": "https://gitee.com/dankit/vscode-api-navigator/issues"
+        "url": "https://gitee.com/dankit/csharp-api-explorer/issues"
     },
-    "homepage": "https://gitee.com/dankit/vscode-api-navigator#readme",
+    "homepage": "https://gitee.com/dankit/csharp-api-explorer#readme",
     "license": "MIT",
     "keywords": [
         "api",
         "route",
-        "navigator",
+        "routes",
+        "explorer",
         "csharp",
         "aspnet",
+        "aspnet core",
         "dotnet",
         "controller",
+        "endpoint",
         "rest api",
-        "web api"
+        "web api",
+        "route analyzer",
+        "api explorer",
+        "debug"
     ],
     "galleryBanner": {
         "color": "#007ACC",
@@ -41,17 +47,17 @@
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "apiNavigator",
-                    "title": "API Navigator",
+                    "id": "csharpApiExplorer",
+                    "title": "API Explorer",
                     "icon": "resources/icons/activity-bar.svg"
                 }
             ]
         },
         "views": {
-            "apiNavigator": [
+            "csharpApiExplorer": [
                 {
-                    "id": "apiNavigator.routesList",
-                    "name": "路由列表",
+                    "id": "csharpApiExplorer.routesList",
+                    "name": "",
                     "visibility": "visible",
                     "type": "tree"
                 }
@@ -59,101 +65,101 @@
         },
         "commands": [
             {
-                "command": "apiNavigator.refresh",
+                "command": "csharpApiExplorer.refresh",
                 "title": "刷新路由",
                 "icon": "$(refresh)"
             },
             {
-                "command": "apiNavigator.search",
+                "command": "csharpApiExplorer.search",
                 "title": "搜索路由",
                 "icon": "$(search)"
             },
             {
-                "command": "apiNavigator.clearSearch",
+                "command": "csharpApiExplorer.clearSearch",
                 "title": "清除搜索",
                 "icon": "$(clear-all)"
             },
             {
-                "command": "apiNavigator.config",
+                "command": "csharpApiExplorer.config",
                 "title": "变量配置",
                 "icon": "$(gear)"
             },
             {
-                "command": "apiNavigator.setAlias",
+                "command": "csharpApiExplorer.setAlias",
                 "title": "设置别名"
             },
             {
-                "command": "apiNavigator.clearAlias",
+                "command": "csharpApiExplorer.clearAlias",
                 "title": "清除别名"
             },
             {
-                "command": "apiNavigator.copyRoute",
+                "command": "csharpApiExplorer.copyRoute",
                 "title": "复制路由"
             },
             {
-                "command": "apiNavigator.startDebugging",
+                "command": "csharpApiExplorer.startDebugging",
                 "title": "启动调试"
             },
             {
-                "command": "apiNavigator.runProject",
+                "command": "csharpApiExplorer.runProject",
                 "title": "运行项目"
             }
         ],
         "menus": {
             "view/title": [
                 {
-                    "command": "apiNavigator.search",
-                    "when": "view == apiNavigator.routesList",
+                    "command": "csharpApiExplorer.search",
+                    "when": "view == csharpApiExplorer.routesList",
                     "group": "navigation@1"
                 },
                 {
-                    "command": "apiNavigator.clearSearch",
-                    "when": "view == apiNavigator.routesList",
+                    "command": "csharpApiExplorer.clearSearch",
+                    "when": "view == csharpApiExplorer.routesList",
                     "group": "navigation@2"
                 },
                 {
-                    "command": "apiNavigator.config",
-                    "when": "view == apiNavigator.routesList",
+                    "command": "csharpApiExplorer.config",
+                    "when": "view == csharpApiExplorer.routesList",
                     "group": "navigation@3"
                 },
                 {
-                    "command": "apiNavigator.refresh",
-                    "when": "view == apiNavigator.routesList",
+                    "command": "csharpApiExplorer.refresh",
+                    "when": "view == csharpApiExplorer.routesList",
                     "group": "navigation@4"
                 }
             ],
             "view/item/context": [
                 {
-                    "command": "apiNavigator.setAlias",
-                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "command": "csharpApiExplorer.setAlias",
+                    "when": "view == csharpApiExplorer.routesList && viewItem == route",
                     "group": "edit@1"
                 },
                 {
-                    "command": "apiNavigator.clearAlias",
-                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "command": "csharpApiExplorer.clearAlias",
+                    "when": "view == csharpApiExplorer.routesList && viewItem == route",
                     "group": "edit@2"
                 },
                 {
-                    "command": "apiNavigator.copyRoute",
-                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "command": "csharpApiExplorer.copyRoute",
+                    "when": "view == csharpApiExplorer.routesList && viewItem == route",
                     "group": "edit@3"
                 },
                 {
-                    "command": "apiNavigator.startDebugging",
-                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "command": "csharpApiExplorer.startDebugging",
+                    "when": "view == csharpApiExplorer.routesList && viewItem == route",
                     "group": "debug@1"
                 },
                 {
-                    "command": "apiNavigator.runProject",
-                    "when": "view == apiNavigator.routesList && viewItem == route",
+                    "command": "csharpApiExplorer.runProject",
+                    "when": "view == csharpApiExplorer.routesList && viewItem == route",
                     "group": "debug@2"
                 }
             ]
         },
         "configuration": {
-            "title": "API Navigator",
+            "title": "C# API Explorer",
             "properties": {
-                "apiNavigator.excludePatterns": {
+                "csharpApiExplorer.excludePatterns": {
                     "type": "array",
                     "default": [
                         "**/bin/**",
@@ -170,16 +176,6 @@
                         "**/wwwroot/lib/**"
                     ],
                     "description": "排除的文件模式"
-                },
-                "apiNavigator.sortBy": {
-                    "type": "string",
-                    "enum": [
-                        "route",
-                        "controller",
-                        "httpVerb"
-                    ],
-                    "default": "route",
-                    "description": "路由排序方式（有别名的路由始终排在前面）"
                 }
             }
         }

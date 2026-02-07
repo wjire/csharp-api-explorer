@@ -3,6 +3,7 @@ import { RouteProvider, RouteTreeItem } from './routeProvider';
 import { RouteParser } from './routeParser';
 import { AliasManager } from './aliasManager';
 import { ConfigManager } from './configManager';
+import { lang } from './languageManager';
 
 const activeProjects = new Set<string>();
 
@@ -17,12 +18,12 @@ vscode.debug.onDidTerminateDebugSession(session => {
  * 插件激活入口
  */
 export function activate(context: vscode.ExtensionContext) {
-    console.log('API Navigator 插件已激活');
+    console.log(lang.t('extension.activated'));
 
     // 获取工作区根目录
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) {
-        vscode.window.showErrorMessage('请先打开一个工作区');
+        vscode.window.showErrorMessage(lang.t('error.noWorkspace'));
         return;
     }
 
@@ -33,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
     const routeProvider = new RouteProvider(aliasManager, configManager);
 
     // 创建TreeView
-    const treeView = vscode.window.createTreeView('apiNavigator.routesList', {
+    const treeView = vscode.window.createTreeView('csharpApiExplorer.routesList', {
         treeDataProvider: routeProvider,
         showCollapseAll: true  // 启用折叠所有按钮
     });
@@ -57,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
                 // 手动刷新时显示进度通知
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
-                    title: '正在解析路由...',
+                    title: lang.t('route.parsing'),
                     cancellable: false
                 }, async () => {
                     await doRefresh();
@@ -81,38 +82,38 @@ export function activate(context: vscode.ExtensionContext) {
                 routeProvider.setRoutes(routes);
 
                 if (!silent) {
-                    vscode.window.showInformationMessage(`找到 ${routes.length} 个路由`);
+                    vscode.window.showInformationMessage(lang.t('route.found', routes.length));
                 }
             }
         } catch (error) {
             if (!silent) {
-                vscode.window.showErrorMessage(`解析路由失败: ${error}`);
+                vscode.window.showErrorMessage(lang.t('route.parseFailed', error));
             } else {
-                console.error('自动刷新路由失败:', error);
+                console.error(lang.t('route.autoRefreshFailed'), error);
             }
         }
     }
 
     // 注册命令：变量配置
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.config', async () => {
+        vscode.commands.registerCommand('csharpApiExplorer.config', async () => {
             await configManager.openConfigFile();
         })
     );
 
     // 注册命令：刷新
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.refresh', async () => {
+        vscode.commands.registerCommand('csharpApiExplorer.refresh', async () => {
             await refreshRoutes();
         })
     );
 
     // 注册命令：搜索
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.search', async () => {
+        vscode.commands.registerCommand('csharpApiExplorer.search', async () => {
             const searchText = await vscode.window.showInputBox({
-                prompt: '搜索路由',
-                placeHolder: '输入路由路径、控制器、Action或别名'
+                prompt: lang.t('search.prompt'),
+                placeHolder: lang.t('search.placeholder')
             });
 
             if (searchText !== undefined) {
@@ -124,18 +125,18 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册命令：清除搜索
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.clearSearch', () => {
+        vscode.commands.registerCommand('csharpApiExplorer.clearSearch', () => {
             routeProvider.setSearchText('');
         })
     );
 
     // 注册命令：设置别名
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.setAlias', async (item: RouteTreeItem) => {
+        vscode.commands.registerCommand('csharpApiExplorer.setAlias', async (item: RouteTreeItem) => {
             const alias = await vscode.window.showInputBox({
-                prompt: '设置别名',
+                prompt: lang.t('alias.setPrompt'),
                 value: item.routeInfo.alias || '',
-                placeHolder: '输入别名，如：购物车-运费-单门店'
+                placeHolder: lang.t('alias.placeholder')
             });
 
             if (alias !== undefined && alias.trim()) {
@@ -151,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册命令：清除别名
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.clearAlias', async (item: RouteTreeItem) => {
+        vscode.commands.registerCommand('csharpApiExplorer.clearAlias', async (item: RouteTreeItem) => {
             await aliasManager.clearAlias(item.routeInfo.route, item.routeInfo.httpVerb);
             await refreshRoutes();
         })
@@ -159,17 +160,17 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册命令：复制路由
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.copyRoute', async (item: RouteTreeItem) => {
+        vscode.commands.registerCommand('csharpApiExplorer.copyRoute', async (item: RouteTreeItem) => {
             // 复制替换变量后的路由
             const route = buildFullRouteUrl(item.routeInfo.projectPath, item.displayRoute);
             await vscode.env.clipboard.writeText(route);
-            vscode.window.showInformationMessage(`已复制: ${route}`);
+            vscode.window.showInformationMessage(lang.t('copy.success', route));
         })
     );
 
     // 注册命令：跳转到定义（用于点击路由项）
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.gotoDefinition', async (item: RouteTreeItem) => {
+        vscode.commands.registerCommand('csharpApiExplorer.gotoDefinition', async (item: RouteTreeItem) => {
             try {
                 const document = await vscode.workspace.openTextDocument(item.routeInfo.filePath);
                 const position = new vscode.Position(item.routeInfo.lineNumber - 1, 0);
@@ -177,21 +178,21 @@ export function activate(context: vscode.ExtensionContext) {
                     selection: new vscode.Range(position, position)
                 });
             } catch (error) {
-                vscode.window.showErrorMessage(`无法打开文件: ${error}`);
+                vscode.window.showErrorMessage(lang.t('error.cannotOpenFile') + `: ${error}`);
             }
         })
     );
 
     // 注册命令：启动调试
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.startDebugging', async (item: RouteTreeItem) => {
+        vscode.commands.registerCommand('csharpApiExplorer.startDebugging', async (item: RouteTreeItem) => {
             await startProjectDebugging(item.routeInfo.projectPath);
         })
     );
 
     // 注册命令：运行项目
     context.subscriptions.push(
-        vscode.commands.registerCommand('apiNavigator.runProject', async (item: RouteTreeItem) => {
+        vscode.commands.registerCommand('csharpApiExplorer.runProject', async (item: RouteTreeItem) => {
             await runProject(item.routeInfo.projectPath);
         })
     );
@@ -220,7 +221,7 @@ export function activate(context: vscode.ExtensionContext) {
      */
     async function startProjectDebugging(projectPath: string | undefined) {
         if (!projectPath) {
-            vscode.window.showErrorMessage('无法找到项目文件');
+            vscode.window.showErrorMessage(lang.t('error.noProjectFile'));
             return;
         }
 
@@ -238,12 +239,12 @@ export function activate(context: vscode.ExtensionContext) {
         const tfm = await detectTargetFramework(projectPath);
 
         // 创建输出窗口
-        const output = vscode.window.createOutputChannel(`Build: ${projectName}`);
+        const output = vscode.window.createOutputChannel(lang.t('build.outputTitle', projectName));
         output.show(true);
-        output.appendLine(`开始构建项目: ${projectName}`);
-        output.appendLine(`项目路径: ${projectDir}`);
-        output.appendLine(`目标框架: ${tfm}`);
-        output.appendLine(`----------------------------------------`);
+        output.appendLine(lang.t('build.starting', projectName));
+        output.appendLine(lang.t('build.projectPath', projectDir));
+        output.appendLine(lang.t('build.targetFramework', tfm));
+        output.appendLine(lang.t('build.separator'));
 
         // 执行 dotnet build
         const buildResult = await new Promise<boolean>((resolve) => {
@@ -254,17 +255,17 @@ export function activate(context: vscode.ExtensionContext) {
 
             p.on("exit", (code: number | null) => {
                 if (code === 0) {
-                    output.appendLine(`\n构建成功 ✓`);
+                    output.appendLine(lang.t('build.success'));
                     resolve(true);
                 } else {
-                    output.appendLine(`\n构建失败 ✗`);
+                    output.appendLine(lang.t('build.failed'));
                     resolve(false);
                 }
             });
         });
 
         if (!buildResult) {
-            vscode.window.showErrorMessage("构建失败，无法启动调试");
+            vscode.window.showErrorMessage(lang.t('error.buildFailed'));
             return;
         }
 
@@ -277,7 +278,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         // 构造动态调试配置
         const debugConfig = {
-            name: `Debug: ${projectName}`,
+            name: lang.t('debug.configName', projectName),
             type: "coreclr",
             request: "launch",
             program: `${projectDir}/bin/Debug/${tfm}/${projectName}.dll`,
@@ -298,7 +299,7 @@ export function activate(context: vscode.ExtensionContext) {
         const started = await vscode.debug.startDebugging(workspaceFolder, debugConfig);
 
         if (!started) {
-            vscode.window.showErrorMessage("启动调试失败");
+            vscode.window.showErrorMessage(lang.t('error.debugStartFailed'));
         } else {
             activeProjects.add(projectDir); // 记录该项目正在调试
         }
@@ -309,7 +310,7 @@ export function activate(context: vscode.ExtensionContext) {
      */
     async function runProject(projectPath: string | undefined) {
         if (!projectPath) {
-            vscode.window.showErrorMessage("无法找到项目文件");
+            vscode.window.showErrorMessage(lang.t('error.noProjectFile'));
             return;
         }
 
@@ -323,7 +324,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         // 创建带环境变量的终端（每次都创建新的）
         const terminal = vscode.window.createTerminal({
-            name: `Run: ${projectName}`,
+            name: lang.t('run.terminalName', projectName),
             cwd: projectDir,
             env: {
                 ASPNETCORE_ENVIRONMENT: "Development",
@@ -360,7 +361,7 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             }
         } catch (error) {
-            console.error('检测目标框架失败:', error);
+            console.error(lang.t('log.detectFrameworkFailed'), error);
         }
 
         // 默认返回 net8.0（最新的 LTS 版本）
@@ -475,8 +476,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.workspace.onDidSaveTextDocument(async (document) => {
             // 监听路由变量配置文件的变化
-            if (document.fileName.endsWith('api-navigator-variables.json')) {
-                console.log('配置文件已更新，重新加载配置');
+            if (document.fileName.endsWith('csharp-api-explorer-variables.json')) {
+                console.log(lang.t('config.reloaded'));
                 await configManager.load();
                 routeProvider.refresh();
             }
@@ -491,5 +492,5 @@ export function activate(context: vscode.ExtensionContext) {
  * 插件停用
  */
 export function deactivate() {
-    console.log('API Navigator 插件已停用');
+    console.log(lang.t('extension.deactivated'));
 }

@@ -1,9 +1,9 @@
-# VSCode API Navigator Installation Script
+# Csharp API Explorer Installation Script
 # Author: Dankit
 # Description: Package and install VSCode extension
 
 Write-Host "=====================================" -ForegroundColor Cyan
-Write-Host "  VSCode API Navigator Installer" -ForegroundColor Cyan
+Write-Host "  C# API Explorer Installer" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -72,52 +72,5 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 Write-Host "Packaging successful" -ForegroundColor Green
-
-# # Find .vsix file
-# $vsixFile = Get-ChildItem -Filter "*.vsix" | Sort-Object { 
-#     if ($_ -match "\d+\.\d+\.\d+") {
-#         [version]($matches[0]) 
-#     } else {
-#         [version]"0.0.0" 
-#     } 
-# } -Descending | Select-Object -First 1
-
-# if (-not $vsixFile) {
-#     Write-Host ".vsix file not found" -ForegroundColor Red
-#     exit 1
-# }
-
-# Write-Host "Extension file: $($vsixFile.Name)" -ForegroundColor Cyan
-
-# # Uninstall old version
-# $extensionId = "dankit.vscode-api-navigator"
-# Write-Host "Uninstalling old version..." -ForegroundColor Yellow
-# code --uninstall-extension $extensionId | Out-Null
-# Start-Sleep -Seconds 1
-
-# # Install extension
-# Write-Host "Installing extension..." -ForegroundColor Yellow
-# code --install-extension $vsixFile.FullName
-# if ($LASTEXITCODE -ne 0) {
-#     Write-Host "Installation failed" -ForegroundColor Red
-#     exit 1
-# }
-
-# Write-Host ""
-# Write-Host "=====================================" -ForegroundColor Green
-# Write-Host "  Installation successful!" -ForegroundColor Green
-# Write-Host "=====================================" -ForegroundColor Green
-# Write-Host ""
-# Write-Host "Please restart VSCode to load the extension" -ForegroundColor Yellow
-# Write-Host ""
-
-# Ask to restart VSCode
-# $restart = Read-Host "Restart VSCode now? (Y/N)"
-# if ($restart -eq 'Y' -or $restart -eq 'y') {
-#     Write-Host "Restarting VSCode..." -ForegroundColor Yellow
-#     Get-Process code -ErrorAction SilentlyContinue | Stop-Process -Force
-#     Start-Sleep -Seconds 2
-#     code .
-# }
 
 Write-Host "Done" -ForegroundColor Cyan

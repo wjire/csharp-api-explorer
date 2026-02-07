@@ -1,55 +1,91 @@
-# Change Log
+# Changelog | 更新日志
 
-All notable changes to the "API Navigator" extension will be documented in this file.
-
-## [0.0.2] - 2026-02-06
-
-### 优化与改进
-
-#### ✨ 改进内容
-- 🎯 重新命名为 "API Navigator For C#" - 更清晰地标识插件功能和目标用户
-- ⚡ 强化一键跳转功能宣传 - 突出最核心的功能优势
-- 🌍 添加英文 README 支持 - 支持中英文混展示，改进国际化体验
-- 📝 优化描述文案 - "One-click jump to C# ASP.NET API routes" 更突出核心价值
-
-## [0.0.1] - 2026-02-06
-
-### 首次发布
-
-#### ✨ 功能特性
-- 🎯 自动解析 C# ASP.NET Core API 路由
-- 🔍 支持搜索路由、控制器、Action 和别名
-- 📝 支持为路由设置和管理别名
-- 🎨 根据 HTTP 方法自动着色（GET/POST/PUT/DELETE）
-- 📂 按项目和控制器分组显示
-- 🔗 一键跳转到代码定义
-- 📋 复制路由路径
-- ⚙️ 支持路由变量配置
-- 🚀 支持运行项目
-
-#### 🎨 UI 特性
-- Activity Bar 独立图标和侧边栏视图
-- 搜索时自动展开并显示搜索关键词
-- 有别名的路由自动排在前面
-- 双行显示：别名 + 路由路径
-
-#### ⚙️ 配置选项
-- 手动刷新路由（推荐）
-- 可选自动刷新（带防抖优化）
-- 自定义排除模式
-- 多种排序方式
-
-#### 🔧 技术特性
-- 零外部依赖，纯正则表达式解析
-- 支持多项目工作区
-- 性能优化：文件名预过滤、增量更新
-- 支持 `[controller]` 和 `[action]` 占位符替换
+记录 C# API Explorer 的所有重要更新。  
+All notable changes to this project will be documented in this file.
 
 ---
 
-## [Unreleased]
+## [1.0.0] - 2026-02-07
 
-### 计划功能
-- 鼠标右键增加 调试项目 功能
-- 支持导出路由列表
-- 支持生成 API 文档
+### ✨ 重大更新 | Major Update
+
+- 🔁 插件重命名：从 **API Navigator** 更名为 **C# API Explorer**  
+  Renamed extension from **API Navigator** to **C# API Explorer**
+
+- 🧭 命名体系重构：统一所有内部 ID、命令、配置项前缀为 `csharpApiExplorer`  
+  Unified all internal IDs, commands, and configuration prefixes to `csharpApiExplorer`
+
+- 📁 配置文件重命名：  
+  Renamed config files:
+  - `.vscode/api-navigator-aliases.json` → `.vscode/csharp-api-explorer-aliases.json`
+  - `.vscode/api-navigator-variables.json` → `.vscode/csharp-api-explorer-variables.json`
+
+- 🌐 更新扩展名称、描述、关键词与 README，支持中英文双语  
+  Updated extension name, description, keywords, and README for bilingual support
+
+---
+
+### 🚀 新功能 | New Features
+
+- 🧠 **路由解析引擎**：自动提取 ASP.NET Core 控制器中的路由信息  
+  **Route parsing engine**: Automatically extracts routes from ASP.NET Core controllers
+
+- 🏷️ **别名支持**：为路由设置自定义别名，便于识别与跳转  
+  **Alias support**: Assign custom aliases to routes for faster navigation
+
+- 🔍 **搜索功能**：支持按路径、控制器、Action 名、别名过滤  
+  **Search bar**: Filter routes by path, controller, action, or alias
+
+- 🎨 **HTTP 方法着色**：GET / POST / PUT / DELETE 自动高亮显示  
+  **HTTP method coloring**: Visual distinction for GET, POST, PUT, DELETE
+
+- 📂 **项目与控制器分组**：按项目和控制器组织路由结构  
+  **Project & controller grouping**: Organize routes by project and controller
+
+- ⚙️ **变量配置支持**：在 `.vscode/csharp-api-explorer-variables.json` 中定义 baseUrl、version 等变量  
+  **Variable configuration**: Define base URLs and placeholders in `.vscode/csharp-api-explorer-variables.json`
+
+- 🛠️ **运行与调试支持**：一键运行或调试项目，自动读取 launchSettings.json 中的环境变量  
+  **Run & Debug support**: One-click launch or debug with environment variables from `launchSettings.json`
+
+---
+
+### 💄 界面优化 | UI Improvements
+
+- 🧭 新增 Activity Bar 图标与独立视图  
+  Added Activity Bar icon and dedicated view
+
+- 🧰 工具栏按钮：搜索、刷新、变量配置  
+  Toolbar buttons: Search, Refresh, Configure
+
+- 📑 支持扁平与分组视图切换  
+  Flat and grouped route views
+
+- 📌 有别名的路由优先排序显示  
+  Routes with aliases are prioritized in sorting
+
+---
+
+### 🧹 命名与结构重构 | Cleanup & Refactor
+
+- 重命名所有 `apiNavigator.*` 标识符为 `csharpApiExplorer.*`  
+  Renamed all `apiNavigator.*` identifiers to `csharpApiExplorer.*`
+
+- 更新配置项结构与默认值  
+  Updated configuration schema and default values
+
+- 优化内部代码结构与命名一致性  
+  Improved internal code structure and naming consistency
+
+---
+
+## [0.0.1] - 初始版本 | Initial Release
+
+- 支持基本的 ASP.NET Core 路由解析与跳转  
+  Basic route parsing and navigation for ASP.NET Core APIs
+
+- 路由树视图：按项目与控制器分组展示  
+  Tree view of routes grouped by project and controller
+
+- 支持手动刷新与基础搜索功能  
+  Manual refresh and basic search support

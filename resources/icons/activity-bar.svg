@@ -1,20 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- 路由树形结构 -->
-  <!-- 顶部节点 -->
-  <circle cx="12" cy="4" r="2"/>
-  
-  <!-- 主干线 -->
-  <rect x="11" y="6" width="2" height="6" rx="1"/>
-  
-  <!-- 左侧分支 -->
-  <path d="M 12 12 L 6 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <circle cx="6" cy="17" r="2"/>
-  
-  <!-- 中间分支 -->
-  <rect x="11" y="12" width="2" height="4" rx="1"/>
-  <circle cx="12" cy="18" r="2"/>
-  
-  <!-- 右侧分支 -->
-  <path d="M 12 12 L 18 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <circle cx="18" cy="17" r="2"/>
+  <!-- 顶部节点（居中） -->
+  <circle cx="12" cy="4" r="1.8"/>
+
+  <!-- 顶部竖线（居中） -->
+<line x1="12" y1="6" x2="12" y2="11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- 左右分支（对称） -->
+  <line x1="12" y1="11.5" x2="7" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="12" y1="11.5" x2="17" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- 底部两个节点（对称 + 居中） -->
+  <circle cx="5.5" cy="18" r="1.8"/>
+  <circle cx="18.5" cy="18" r="1.8"/>
 </svg>

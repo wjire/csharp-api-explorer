@@ -6,7 +6,7 @@ import { AliasConfig } from './models/route';
  * 别名管理器
  */
 export class AliasManager {
-    private readonly aliasFileName = 'api-navigator-aliases.json';
+    private readonly aliasFileName = 'csharp-api-explorer-aliases.json';
     private aliasMap: Map<string, string> = new Map();
 
     constructor(private workspaceRoot: string) { }

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { RouteInfo } from './models/route';
 import { AliasManager } from './aliasManager';
 import { ConfigManager } from './configManager';
+import { lang } from './languageManager';
 
 /**
  * 树节点类型
@@ -89,9 +90,6 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 排序路由
      */
     private sortRoutes(): void {
-        const config = vscode.workspace.getConfiguration('apiNavigator');
-        const sortBy = config.get<string>('sortBy', 'route');
-
         this.filteredRoutes.sort((a, b) => {
             // 首先按是否有别名排序
             const aHasAlias = !!a.alias;
@@ -101,16 +99,8 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
                 return aHasAlias ? -1 : 1;
             }
 
-            // 然后按指定字段排序
-            switch (sortBy) {
-                case 'controller':
-                    return a.controller.localeCompare(b.controller);
-                case 'httpVerb':
-                    return a.httpVerb.localeCompare(b.httpVerb);
-                case 'route':
-                default:
-                    return a.route.localeCompare(b.route);
-            }
+            // 按路由路径排序
+            return a.route.localeCompare(b.route);
         });
     }
 
@@ -238,7 +228,7 @@ export class ProjectGroupItem extends vscode.TreeItem {
     ) {
         const path = require('path');
         const projectName = projectPath === 'Unknown'
-            ? '未知项目'
+            ? lang.t('treeview.unknownProject')
             : path.basename(projectPath, '.csproj');
 
         // 搜索时自动展开，否则保持展开
@@ -246,9 +236,9 @@ export class ProjectGroupItem extends vscode.TreeItem {
 
         // 描述显示路由数量和搜索状态
         if (isSearching) {
-            this.description = `🔍 "${searchText}" - ${routeCount} 个`;
+            this.description = lang.t('search.result', searchText, routeCount);
         } else {
-            this.description = `${routeCount} 个路由`;
+            this.description = lang.t('treeview.routesCount', routeCount);
         }
 
         // 使用文件夹图标
@@ -283,7 +273,7 @@ export class ControllerGroupItem extends vscode.TreeItem {
         super(displayName, state);
 
         // 描述显示路由数量（搜索时不重复显示搜索关键词）
-        this.description = `${routeCount} 个`;
+        this.description = `${routeCount}`;
 
         // 使用文件图标
         this.iconPath = new vscode.ThemeIcon('symbol-class');
@@ -345,7 +335,7 @@ export class RouteTreeItem extends vscode.TreeItem {
 
         // 设置点击命令，跳转到文件
         this.command = {
-            command: 'apiNavigator.gotoDefinition',
+            command: 'csharpApiExplorer.gotoDefinition',
             title: '跳转到定义',
             arguments: [this]
         };

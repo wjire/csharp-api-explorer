@@ -203,7 +203,7 @@ export class ApiTestPanel {
         const headerParams = apiEndpoint.parameters.filter(p => p.source === ParameterSource.Header);
         const queryParams = apiEndpoint.parameters.filter(p => p.source === ParameterSource.Query);
         const pathParams = apiEndpoint.parameters.filter(p => p.source === ParameterSource.Path);
-        
+
         return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -222,24 +222,39 @@ export class ApiTestPanel {
             font-size: var(--vscode-font-size);
             color: var(--vscode-foreground);
             background-color: var(--vscode-editor-background);
-            padding: 20px;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
-        .header {
-            margin-bottom: 20px;
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 0 0 50%;
+            overflow-y: auto;
+            border-right: 1px solid var(--vscode-panel-border);
+        }
+
+        .right-panel {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .request-section {
             background-color: var(--vscode-editor-background);
-            border: 1px solid var(--vscode-panel-border);
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 20px;
         }
 
         .url-section {
@@ -379,61 +394,186 @@ export class ApiTestPanel {
 
         .response-section {
             background-color: var(--vscode-editor-background);
-            border: 1px solid var(--vscode-panel-border);
-            border-radius: 4px;
-            padding: 15px;
-        }
-
-        .response-header {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #responseContent {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 30px;
+            padding: 23px;
+            padding-bottom: 0;
+            margin-bottom: 10px;
+            background-color: var(--vscode-editor-background);
+            font-size: 0.95em;
+        }
+
+        .status-item {
+            display: flex;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--vscode-panel-border);
+            gap: 5px;
         }
 
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        .status-badge.success {
-            background-color: #49cc90;
-            color: white;
-        }
-
-        .status-badge.error {
-            background-color: #f93e3e;
-            color: white;
-        }
-
-        .duration {
+        .status-label {
             color: var(--vscode-descriptionForeground);
+        }
+
+        .status-value {
+            font-weight: 500;
+        }
+
+        .status-value.success {
+            color: #49cc90;
+        }
+
+        .status-value.error {
+            color: #f93e3e;
+        }
+
+        .status-value.info {
+            color: #61affe;
         }
 
         .response-tabs {
             display: flex;
             border-bottom: 1px solid var(--vscode-panel-border);
             margin-bottom: 15px;
+            background-color: var(--vscode-editor-background);
+        }
+
+        .response-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .response-tab:hover {
+            background-color: var(--vscode-list-hoverBackground);
+        }
+
+        .response-tab.active {
+            border-bottom-color: var(--vscode-button-background);
+            color: var(--vscode-button-background);
+        }
+
+        .response-tab-badge {
+            margin-left: 6px;
+            padding: 2px 6px;
+            background-color: var(--vscode-badge-background);
+            color: var(--vscode-badge-foreground);
+            border-radius: 10px;
+            font-size: 0.85em;
+        }
+
+        .response-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .response-tab-panel {
+            display: none;
+            height: 100%;
+        }
+
+        .response-tab-panel.active {
+            display: block;
         }
 
         .response-body {
-            background-color: var(--vscode-input-background);
-            padding: 10px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            max-height: 400px;
-            overflow-y: auto;
+            display: flex;
+            background-color: var(--vscode-editor-background);
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .line-numbers {
+            background-color: var(--vscode-editorGutter-background);
+            color: var(--vscode-editorLineNumber-foreground);
+            padding: 20px 10px 20px 16px;
+            text-align: right;
+            user-select: none;
+            border-right: 1px solid var(--vscode-panel-border);
+            min-width: 50px;
+            flex-shrink: 0;
+        }
+
+        .line-numbers .line-number {
+            display: block;
+        }
+
+        .code-wrapper {
+            flex: 1;
+            overflow: auto;
+        }
+
+        .code-content {
+            margin: 0;
+            padding: 20px;
+            background-color: transparent;
+            color: var(--vscode-editor-foreground);
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow: visible;
+            white-space: pre;
+            user-select: text;
+            cursor: text;
+        }
+
+        .code-content code {
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            color: inherit;
+            white-space: pre;
+            user-select: text;
+        }
+
+        .response-headers {
+            padding: 20px;
+        }
+
+        .header-item {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--vscode-panel-border);
+        }
+
+        .header-key {
+            flex: 0 0 200px;
+            font-weight: 500;
+            color: var(--vscode-symbolIcon-variableForeground);
+        }
+
+        .header-value {
+            flex: 1;
+            color: var(--vscode-foreground);
+            word-break: break-all;
         }
 
         .empty-state {
             text-align: center;
             color: var(--vscode-descriptionForeground);
-            padding: 40px;
+            padding: 20px;
+        }
+
+        .sended-state {
+            text-align: left;
+            color: var(--vscode-descriptionForeground);
+            padding: 6px;
         }
 
         .token-input {
@@ -455,68 +595,69 @@ export class ApiTestPanel {
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h2>🚀 API Test</h2>
-        </div>
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="request-section">
+                    <div class="url-section">
+                        <div class="http-method ${apiEndpoint.httpMethod}">${apiEndpoint.httpMethod}</div>
+                        <input type="text" class="url-input" id="urlInput" value="${apiEndpoint.fullUrl || apiEndpoint.routeTemplate}" />
+                        <button class="send-button" id="sendButton">Send</button>
+                    </div>
 
-        <div class="request-section">
-            <div class="url-section">
-                <div class="http-method ${apiEndpoint.httpMethod}">${apiEndpoint.httpMethod}</div>
-                <input type="text" class="url-input" id="urlInput" value="${apiEndpoint.fullUrl || apiEndpoint.routeTemplate}" />
-                <button class="send-button" id="sendButton">Send</button>
-            </div>
+                    <div class="tabs">
+                        <div class="tab active" data-tab="headers">Headers</div>
+                        <div class="tab" data-tab="auth">Auth</div>
+                        <div class="tab" data-tab="query">Query</div>
+                        <div class="tab" data-tab="body">Body</div>
+                    </div>
 
-            <div class="tabs">
-                <div class="tab active" data-tab="auth">Auth</div>
-                <div class="tab" data-tab="headers">Headers</div>
-                <div class="tab" data-tab="query">Query</div>
-                <div class="tab" data-tab="body">Body</div>
-            </div>
-
-            <div id="authTab" class="tab-content active">
-                <div class="param-row">
-                    <span class="param-label">Bearer Token:</span>
-                    <input type="text" class="token-input" id="tokenInput" placeholder="Enter your bearer token" />
-                </div>
-                <div class="hint">Enter a Bearer token for authentication (optional)</div>
-            </div>
-
-            <div id="headersTab" class="tab-content">
-                <div class="param-list" id="headersList">
-                    ${headerParams.map(p => `
+                    <div id="authTab" class="tab-content">
                         <div class="param-row">
-                            <input type="text" class="param-input" placeholder="Key" value="${p.name}" />
-                            <input type="text" class="param-input" placeholder="Value" />
-                            <button class="remove-button" onclick="removeRow(this)">Remove</button>
+                            <span class="param-label">Bearer Token:</span>
+                            <input type="text" class="token-input" id="tokenInput" placeholder="Enter your bearer token" />
                         </div>
-                    `).join('')}
-                </div>
-                <button class="add-button" onclick="addHeaderRow()">Add Header</button>
-            </div>
+                        <div class="hint">Enter a Bearer token for authentication (optional)</div>
+                    </div>
 
-            <div id="queryTab" class="tab-content">
-                <div class="param-list" id="queryList">
-                    ${queryParams.map(p => `
-                        <div class="param-row">
-                            <input type="text" class="param-input" placeholder="Key" value="${p.name}" />
-                            <input type="text" class="param-input" placeholder="Value" />
-                            <button class="remove-button" onclick="removeRow(this)">Remove</button>
+                    <div id="headersTab" class="tab-content active">
+                        <div class="param-list" id="headersList">
+                            ${headerParams.map(p => `
+                                <div class="param-row">
+                                    <input type="text" class="param-input" placeholder="Key" value="${p.name}" />
+                                    <input type="text" class="param-input" placeholder="Value" />
+                                    <button class="remove-button" onclick="removeRow(this)">Remove</button>
+                                </div>
+                            `).join('')}
                         </div>
-                    `).join('')}
+                        <button class="add-button" onclick="addHeaderRow()">Add Header</button>
+                    </div>
+
+                    <div id="queryTab" class="tab-content">
+                        <div class="param-list" id="queryList">
+                            ${queryParams.map(p => `
+                                <div class="param-row">
+                                    <input type="text" class="param-input" placeholder="Key" value="${p.name}" />
+                                    <input type="text" class="param-input" placeholder="Value" />
+                                    <button class="remove-button" onclick="removeRow(this)">Remove</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="add-button" onclick="addQueryRow()">Add Query Parameter</button>
+                    </div>
+
+                    <div id="bodyTab" class="tab-content">
+                        <textarea class="body-editor" id="bodyEditor" placeholder="Enter JSON body here..."></textarea>
+                        <div class="hint">Enter raw JSON for the request body</div>
+                    </div>
                 </div>
-                <button class="add-button" onclick="addQueryRow()">Add Query Parameter</button>
             </div>
 
-            <div id="bodyTab" class="tab-content">
-                <textarea class="body-editor" id="bodyEditor" placeholder="Enter JSON body here..."></textarea>
-                <div class="hint">Enter raw JSON for the request body</div>
-            </div>
-        </div>
-
-        <div class="response-section">
-            <h3>Response</h3>
-            <div id="responseContent" class="empty-state">
-                <p>No response yet. Click "Send" to make a request.</p>
+            <div class="right-panel">
+                <div class="response-section">
+                    <div id="responseContent" class="empty-state">
+                        <p>No response yet. Click "Send" to make a request.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -648,41 +789,120 @@ export class ApiTestPanel {
             const container = document.getElementById('responseContent');
             
             if (data.success) {
+
+                container.classList.remove('empty-state');
+                container.classList.add('sended-state');
+
                 const statusClass = data.statusCode >= 200 && data.statusCode < 300 ? 'success' : 'error';
+                const statusText = data.statusCode >= 200 && data.statusCode < 300 ? '200 OK' : data.statusCode + ' Error';
                 
                 // Try to format JSON
                 let formattedBody = data.body;
+                let bodySize = new Blob([data.body]).size;
+                let isJson = false;
                 try {
                     const jsonObj = JSON.parse(data.body);
                     formattedBody = JSON.stringify(jsonObj, null, 2);
+                    isJson = true;
                 } catch {
                     // Not JSON, keep as is
                 }
 
+                // Generate line numbers
+                const lines = formattedBody.split('\\n');
+                const lineNumbers = lines.map((_, i) => '<span class="line-number">' + (i + 1) + '</span>').join('');
+
+                // Escape HTML in response body to safely display it
+                const escapeHtml = (text) => {
+                    return text
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
+                };
+                const escapedBody = escapeHtml(formattedBody);
+
+                // Prepare headers
+                const headerCount = Object.keys(data.headers || {}).length;
+                const headersHtml = Object.entries(data.headers || {}).map(([key, value]) => \`
+                    <div class="header-item">
+                        <div class="header-key">\${escapeHtml(key)}:</div>
+                        <div class="header-value">\${escapeHtml(String(value))}</div>
+                    </div>
+                \`).join('');
+
                 container.innerHTML = \`
-                    <div class="response-header">
-                        <span class="status-badge \${statusClass}">Status: \${data.statusCode}</span>
-                        <span class="duration">Time: \${data.duration}ms</span>
+                    <div class="status-bar">
+                        <div class="status-item">
+                            <span class="status-label">Status:</span>
+                            <span class="status-value \${statusClass}">\${statusText}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Size:</span>
+                            <span class="status-value info">\${bodySize} Bytes</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Time:</span>
+                            <span class="status-value">\${data.duration} ms</span>
+                        </div>
                     </div>
                     <div class="response-tabs">
-                        <div class="tab active">Body</div>
+                        <div class="response-tab active" data-response-tab="body">Response</div>
+                        <div class="response-tab" data-response-tab="headers">
+                            Headers
+                            <span class="response-tab-badge">\${headerCount}</span>
+                        </div>
                     </div>
-                    <div class="response-body">\${formattedBody}</div>
+                    <div class="response-content">
+                        <div class="response-tab-panel active" id="bodyPanel">
+                            <div class="response-body">
+                                <div class="line-numbers">\${lineNumbers}</div>
+                                <div class="code-wrapper">
+                                    <pre class="code-content"><code>\${escapedBody}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="response-tab-panel" id="headersPanel">
+                            <div class="response-headers">\${headersHtml}</div>
+                        </div>
+                    </div>
                 \`;
+
+                // Add tab switching for response tabs
+                container.querySelectorAll('.response-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabName = tab.dataset.responseTab;
+                        
+                        // Update tab styles
+                        container.querySelectorAll('.response-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+
+                        // Update content
+                        container.querySelectorAll('.response-tab-panel').forEach(p => p.classList.remove('active'));
+                        container.querySelector('#' + tabName + 'Panel').classList.add('active');
+                    });
+                });
             } else {
                 container.innerHTML = \`
-                    <div class="response-header">
-                        <span class="status-badge error">Error</span>
-                        <span class="duration">Time: \${data.duration}ms</span>
+                    <div class="status-bar">
+                        <div class="status-item">
+                            <span class="status-label">Status:</span>
+                            <span class="status-value error">Error</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Time:</span>
+                            <span class="status-value">\${data.duration} ms</span>
+                        </div>
                     </div>
-                    <div class="response-body" style="color: var(--vscode-errorForeground);">\${data.error}</div>
+                    <div class="response-body" style="color: var(--vscode-errorForeground); padding: 20px;">\${data.error}</div>
                 \`;
             }
         }
 
         function updateApiEndpoint(apiEndpoint) {
             document.getElementById('urlInput').value = apiEndpoint.fullUrl || apiEndpoint.routeTemplate;
-        }
+        }            
     </script>
 </body>
 </html>`;

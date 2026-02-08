@@ -145,7 +145,12 @@ export function activate(context: vscode.ExtensionContext) {
                     item.routeInfo.httpVerb,
                     alias.trim()
                 );
-                await refreshRoutes();
+                // 只更新别名并重新排序，不需要重新扫描文件
+                routeProvider.updateRouteAlias(
+                    item.routeInfo.route,
+                    item.routeInfo.httpVerb,
+                    alias.trim()
+                );
             }
         })
     );
@@ -154,7 +159,12 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('csharpApiExplorer.clearAlias', async (item: RouteTreeItem) => {
             await aliasManager.clearAlias(item.routeInfo.route, item.routeInfo.httpVerb);
-            await refreshRoutes();
+            // 只更新别名并重新排序，不需要重新扫描文件
+            routeProvider.updateRouteAlias(
+                item.routeInfo.route,
+                item.routeInfo.httpVerb,
+                undefined
+            );
         })
     );
 

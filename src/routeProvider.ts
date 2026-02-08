@@ -105,6 +105,27 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     }
 
     /**
+     * 更新路由别名并重新排序
+     */
+    updateRouteAlias(route: string, httpVerb: string, alias: string | undefined): void {
+        // 在原始路由列表中查找并更新
+        const routeInfo = this.routes.find(r => r.route === route && r.httpVerb === httpVerb);
+        if (routeInfo) {
+            routeInfo.alias = alias;
+        }
+
+        // 在过滤后的路由列表中查找并更新
+        const filteredRouteInfo = this.filteredRoutes.find(r => r.route === route && r.httpVerb === httpVerb);
+        if (filteredRouteInfo) {
+            filteredRouteInfo.alias = alias;
+        }
+
+        // 重新排序并刷新视图
+        this.sortRoutes();
+        this.refresh();
+    }
+
+    /**
      * 获取树节点
      */
     getTreeItem(element: TreeNode): vscode.TreeItem {

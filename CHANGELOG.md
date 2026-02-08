@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.2] - 2026-02-08
+
+### 🐛 修复 | Bug Fixes
+
+- 🔧 **修复 [action] 占位符处理**：正确支持带有 `[Route("[controller]/[action]")]` 的控制器  
+  **Fixed [action] placeholder handling**: Properly support controllers with `[Route("[controller]/[action]")]`
+  
+  - 控制器路由包含 `[action]` 时，Action 方法名会自动替换占位符（去除 Async 后缀并转为小写）  
+    When controller route contains `[action]`, action method names automatically replace the placeholder (removing Async suffix and converting to lowercase)
+  
+  - 没有显式 HTTP 特性的方法会被标记为 `[ANY]`，表示接受所有 HTTP 动词  
+    Methods without explicit HTTP attributes are marked as `[ANY]`, accepting all HTTP verbs
+  
+  - 示例：`GetAsync()` → `/controller/get [ANY]`，`PostAsync()` → `/controller/post [ANY]`  
+    Example: `GetAsync()` → `/controller/get [ANY]`, `PostAsync()` → `/controller/post [ANY]`
+
 ## [1.0.1] - 2026-02-08
 
 ### 🌍 国际化改进 | Internationalization

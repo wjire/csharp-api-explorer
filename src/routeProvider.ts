@@ -375,6 +375,8 @@ export class RouteTreeItem extends vscode.TreeItem {
                 return new vscode.ThemeColor('charts.orange');
             case 'DELETE':
                 return new vscode.ThemeColor('charts.red');
+            case 'ANY':
+                return new vscode.ThemeColor('charts.purple');
             default:
                 return new vscode.ThemeColor('charts.blue');
         }

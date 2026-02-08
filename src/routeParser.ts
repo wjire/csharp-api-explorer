@@ -234,7 +234,7 @@ export class RouteParser {
 
         // 向上查找最多5行，寻找 HTTP 方法特性和 Route 特性
         const startLine = Math.max(0, lineIndex - 5);
-        let httpVerb: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET'; // 默认 GET
+        let httpVerb: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'ANY' = 'ANY'; // 默认 ANY（接受所有动词）
         let actionRoute = '';
         let foundHttpAttribute = false;
 
@@ -274,10 +274,23 @@ export class RouteParser {
             }
         }
 
-        // 如果没有找到 HTTP 方法特性或 Route 特性，则不是有效的 Action
+        // 检查控制器路由是否包含 [action] 占位符
+        const hasActionPlaceholder = baseRoute?.includes('[action]');
+
+        // 判断是否是有效的 Action 方法
         if (!foundHttpAttribute && !actionRoute) {
-            return null;
+            // 如果既没有 HTTP 特性，也没有 Route 特性
+            // 只有当控制器路由包含 [action] 时，这个方法才是有效的 Action
+            if (!hasActionPlaceholder) {
+                return null;
+            }
+            // 有 [action] 占位符，方法有效，httpVerb = 'ANY'
         }
+
+        // 重要：httpVerb 为 'ANY' 的前提条件是：
+        // 1. 控制器路由包含 [action]，且方法没有显式 HTTP 特性
+        // 2. 或者方法有 [Route] 特性但没有 HTTP 特性
+        // 满足以上条件时，该方法接受所有 HTTP 动词
 
         // 构建完整路由
         const fullRoute = this.buildFullRoute(baseRoute, actionRoute, controllerName, actionName);

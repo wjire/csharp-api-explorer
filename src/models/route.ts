@@ -6,7 +6,7 @@ export interface RouteInfo {
     route: string;
 
     /** HTTP方法 */
-    httpVerb: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    httpVerb: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'ANY';
 
     /** 控制器名称，如：AftersaleController */
     controller: string;

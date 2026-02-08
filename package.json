@@ -2,7 +2,7 @@
     "name": "csharp-api-explorer",
     "displayName": "C# API Explorer",
     "description": "A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and debug your API routes effortlessly.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publisher": "dankit",
     "icon": "resources/icons/icon.png",
     "repository": {
@@ -66,43 +66,43 @@
         "commands": [
             {
                 "command": "csharpApiExplorer.refresh",
-                "title": "刷新路由",
+                "title": "刷新路由 (Refresh Routes)",
                 "icon": "$(refresh)"
             },
             {
                 "command": "csharpApiExplorer.search",
-                "title": "搜索路由",
+                "title": "搜索路由 (Search Routes)",
                 "icon": "$(search)"
             },
             {
                 "command": "csharpApiExplorer.clearSearch",
-                "title": "清除搜索",
+                "title": "清除搜索 (Clear Search)",
                 "icon": "$(clear-all)"
             },
             {
                 "command": "csharpApiExplorer.config",
-                "title": "变量配置",
+                "title": "变量配置 (Variables)",
                 "icon": "$(gear)"
             },
             {
                 "command": "csharpApiExplorer.setAlias",
-                "title": "设置别名"
+                "title": "设置别名 (Set Alias)"
             },
             {
                 "command": "csharpApiExplorer.clearAlias",
-                "title": "清除别名"
+                "title": "清除别名 (Clear Alias)"
             },
             {
                 "command": "csharpApiExplorer.copyRoute",
-                "title": "复制路由"
+                "title": "复制路由 (Copy Route)"
             },
             {
                 "command": "csharpApiExplorer.startDebugging",
-                "title": "启动调试"
+                "title": "启动调试 (Start Debugging)"
             },
             {
                 "command": "csharpApiExplorer.runProject",
-                "title": "运行项目"
+                "title": "运行项目 (Run Project)"
             }
         ],
         "menus": {
@@ -175,7 +175,7 @@
                         "**/build/**",
                         "**/wwwroot/lib/**"
                     ],
-                    "description": "排除的文件模式"
+                    "description": "排除的文件模式(Files to exclude)"
                 }
             }
         }

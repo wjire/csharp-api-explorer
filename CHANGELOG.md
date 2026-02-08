@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.1] - 2026-02-08
+
+### 🌍 国际化改进 | Internationalization
+
+- 📝 所有命令和右键菜单标题现在支持中英双语显示（格式：中文 (English)）  
+  All command and context menu titles now display in both Chinese and English (format: 中文 (English))
+
+- 🌐 改进后的菜单包括：刷新路由、搜索路由、设置别名、复制路由、启动调试、运行项目等  
+  Improved menus include: Refresh Routes, Search Routes, Set Alias, Copy Route, Start Debugging, Run Project, etc.
+
+- 🤝 提升国际用户友好度，使非中文用户也能理解各项功能  
+  Enhanced accessibility for international users who can now understand all features
+
+---
+
 ## [1.0.0] - 2026-02-07
 
 ### ✨ 重大更新 | Major Update

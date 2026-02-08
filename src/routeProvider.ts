@@ -336,7 +336,7 @@ export class RouteTreeItem extends vscode.TreeItem {
         // 设置点击命令，跳转到文件
         this.command = {
             command: 'csharpApiExplorer.gotoDefinition',
-            title: '跳转到定义',
+            title: '跳转到定义 (Go to Definition)',
             arguments: [this]
         };
     }

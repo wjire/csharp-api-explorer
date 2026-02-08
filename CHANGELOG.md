@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.3] - 2026-02-08
+
+### 🐛 修复 | Bug Fixes
+
+- 🔧 **支持多特性在同一行**：正确识别在同一行用逗号分隔的多个特性  
+  **Support multiple attributes on the same line**: Correctly recognize multiple attributes separated by commas on the same line
+  
+  - 支持 `[Route("list"), HttpGet]` 写法（特性顺序无关）  
+    Support `[Route("list"), HttpGet]` syntax (attribute order doesn't matter)
+  
+  - 改进正则表达式以支持逗号分隔的特性  
+    Improved regex patterns to support comma-separated attributes
+
+### ✨ 改进 | Improvements
+
+- 🎨 **新增 ANY HTTP 动词支持**：新增 `ANY` 类型表示接受所有 HTTP 动词的路由  
+  **Added ANY HTTP verb support**: New `ANY` type for routes that accept all HTTP verbs
+  
+- 🎨 为 `[ANY]` 类型路由添加紫色标识色  
+  Added purple color indicator for `[ANY]` type routes
+
+---
+
 ## [1.0.2] - 2026-02-08
 
 ### 🐛 修复 | Bug Fixes

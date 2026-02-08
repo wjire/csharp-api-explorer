@@ -11,11 +11,11 @@ export class RouteParser {
     // 匹配 Controller 上的 Route 特性
     private readonly controllerRouteRegex = /\[Route\s*\(\s*"([^"]+)"\s*\)\s*\]/g;
 
-    // 匹配 HTTP 方法特性（支持无括号、空括号、带路径）
-    private readonly httpMethodRegex = /\[(HttpGet|HttpPost|HttpPut|HttpDelete)(?:\s*\(\s*(?:"([^"]*)")?\s*\))?\s*\]/g;
+    // 匹配 HTTP 方法特性（支持无括号、空括号、带路径、多特性逗号分隔）
+    private readonly httpMethodRegex = /\b(HttpGet|HttpPost|HttpPut|HttpDelete)(?:\s*\(\s*(?:"([^"]*)")?\s*\))?(?=\s*[,\]])/g;
 
-    // 匹配 Route 特性
-    private readonly routeRegex = /\[Route\s*\(\s*"([^"]+)"\s*\)\s*\]/g;
+    // 匹配 Route 特性（支持多特性逗号分隔）
+    private readonly routeRegex = /\bRoute\s*\(\s*"([^"]+)"\s*\)(?=\s*[,\]])/g;
 
     // 匹配方法定义
     private readonly methodRegex = /(?:public|private|protected|internal)\s+(?:async\s+)?(?:Task<)?[\w<>]+(?:>)?\s+(\w+)\s*\(/g;
@@ -238,6 +238,7 @@ export class RouteParser {
         let actionRoute = '';
         let foundHttpAttribute = false;
 
+        // 从方法定义行的上一行开始向上查找特性
         for (let i = lineIndex - 1; i >= startLine; i--) {
             const attrLine = lines[i];
 
@@ -251,11 +252,10 @@ export class RouteParser {
                 break;
             }
 
-            // 1. 检查 HTTP 方法特性（确定谓词）
+            // 1. 检查 HTTP 方法特性（确定谓词）- 支持同一行多个特性
             this.httpMethodRegex.lastIndex = 0;
-            const httpMatch = this.httpMethodRegex.exec(attrLine);
-
-            if (httpMatch) {
+            let httpMatch;
+            while ((httpMatch = this.httpMethodRegex.exec(attrLine)) !== null) {
                 foundHttpAttribute = true;
                 httpVerb = httpMatch[1].replace('Http', '').toUpperCase() as 'GET' | 'POST' | 'PUT' | 'DELETE';
 
@@ -265,12 +265,13 @@ export class RouteParser {
                 }
             }
 
-            // 2. 检查 Route 特性（确定路由）
+            // 2. 检查 Route 特性（确定路由）- 支持同一行多个特性
             this.routeRegex.lastIndex = 0;
-            const routeMatch = this.routeRegex.exec(attrLine);
-
-            if (routeMatch && !actionRoute) {
-                actionRoute = routeMatch[1];
+            let routeMatch;
+            while ((routeMatch = this.routeRegex.exec(attrLine)) !== null) {
+                if (!actionRoute) {
+                    actionRoute = routeMatch[1];
+                }
             }
         }
 

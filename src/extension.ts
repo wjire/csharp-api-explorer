@@ -3,6 +3,7 @@ import { RouteProvider, RouteTreeItem } from './routeProvider';
 import { RouteParser } from './routeParser';
 import { AliasManager } from './aliasManager';
 import { ConfigManager } from './configManager';
+import { ProjectConfigCache } from './projectConfigCache';
 import { lang } from './languageManager';
 
 const activeProjects = new Set<string>();
@@ -28,9 +29,10 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     // 初始化管理器
+    const projectConfigCache = new ProjectConfigCache();
     const aliasManager = new AliasManager(workspaceRoot);
     const configManager = new ConfigManager(workspaceRoot);
-    const routeParser = new RouteParser();
+    const routeParser = new RouteParser(projectConfigCache);
     const routeProvider = new RouteProvider(aliasManager, configManager);
 
     // 创建TreeView
@@ -69,6 +71,11 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             async function doRefresh() {
+                // 手动刷新时清空缓存
+                if (!silent) {
+                    routeParser.clearCache();
+                }
+
                 const routes = await routeParser.parseWorkspace();
 
                 // 添加别名信息
@@ -104,6 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
     // 注册命令：刷新
     context.subscriptions.push(
         vscode.commands.registerCommand('csharpApiExplorer.refresh', async () => {
+            routeProvider.setSearchText(''); // 清空搜索条件
             await refreshRoutes();
         })
     );
@@ -172,7 +180,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('csharpApiExplorer.copyRoute', async (item: RouteTreeItem) => {
             // 复制替换变量后的路由
-            const route = buildFullRouteUrl(item.routeInfo.projectPath, item.displayRoute);
+            const route = await buildFullRouteUrl(item.routeInfo.projectPath, item.displayRoute);
             await vscode.env.clipboard.writeText(route);
             vscode.window.showInformationMessage(lang.t('copy.success', route));
         })
@@ -210,14 +218,14 @@ export function activate(context: vscode.ExtensionContext) {
     /**
      * 构建完整的路由 URL（包含基础地址）
      */
-    function buildFullRouteUrl(projectPath: string | undefined, routePath: string) {
-        const projectProfile = getProjectProfile(projectPath);
-
-        if (!projectProfile) {
-            return routePath; // fallback
+    async function buildFullRouteUrl(projectPath: string | undefined, routePath: string) {
+        if (!projectPath) {
+            return routePath;
         }
 
-        const baseUrl = getBaseUrlFromLaunchSettings(projectProfile);
+        const path = require('path');
+        const projectDir = path.dirname(projectPath);
+        const baseUrl = await projectConfigCache.getBaseUrl(projectDir);
 
         if (!baseUrl) {
             return routePath; // fallback
@@ -496,6 +504,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 添加到订阅列表
     context.subscriptions.push(treeView);
+    context.subscriptions.push(projectConfigCache);
 }
 
 /**

@@ -1,10 +1,13 @@
 import * as vscode from 'vscode';
 import { RouteInfo } from './models/route';
+import { ProjectConfigCache } from './projectConfigCache';
 
 /**
  * C# 路由解析器
  */
 export class RouteParser {
+    private projectConfigCache: ProjectConfigCache;
+
     // 匹配 Controller 类（支持访问修饰符和多行定义）
     private readonly controllerRegex = /(?:public|private|protected|internal)?\s*(?:static|abstract|sealed)?\s*class\s+(\w+Controller)\s*(?::\s*[\w<>,\s]+)?\s*(?:\{|$)/gm;
 
@@ -19,6 +22,17 @@ export class RouteParser {
 
     // 匹配方法定义
     private readonly methodRegex = /(?:public|private|protected|internal)\s+(?:async\s+)?(?:Task<)?[\w<>]+(?:>)?\s+(\w+)\s*\(/g;
+
+    constructor(projectConfigCache: ProjectConfigCache) {
+        this.projectConfigCache = projectConfigCache;
+    }
+
+    /**
+     * 清空缓存（手动刷新时调用）
+     */
+    clearCache(): void {
+        this.projectConfigCache.clearAllCache();
+    }
 
     /**
      * 解析工作区中的所有 C# 文件
@@ -68,8 +82,9 @@ export class RouteParser {
             return routes;
         }
 
-        // 查找该文件所属的 .csproj 项目文件
-        const projectPath = await this.findProjectFile(uri.fsPath);
+        // 使用缓存查找该文件所属的项目目录
+        const projectDir = await this.projectConfigCache.getProjectDirectory(uri.fsPath);
+        const projectPath = projectDir ? require('path').join(projectDir, require('path').basename(projectDir) + '.csproj') : undefined;
 
         // 过滤测试、示例和基类文件
         const filePath = uri.fsPath.toLowerCase();

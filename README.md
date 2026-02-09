@@ -33,6 +33,9 @@ A powerful VS Code extension for navigating, analyzing, and managing C# Web API 
 - 🚀 **运行与调试**：支持 dotnet run 和调试启动，自动注入环境变量  
   **Run & debug support**: Launch or debug projects with environment variables from launchSettings.json
 
+- 🔧 **路由变量替换**：支持 ASP.NET Core 路由约束变量（如 `{version:apiVersion}`），通过配置文件定义变量值，复制路由时自动替换  
+  **Route variable substitution**: Automatically replaces route constraint variables (e.g., `{version:apiVersion}`) with configured values when copying routes
+
 ---
 
 ## 🎨 UI 特性 | UI Highlights
@@ -56,6 +59,11 @@ A powerful VS Code extension for navigating, analyzing, and managing C# Web API 
 
 ## ⚙️ 配置 | Configuration
 
+### 排除模式 | Exclude Patterns
+
+配置扫描时需要排除的目录模式：  
+Configure directory patterns to exclude during route scanning:
+
 ```json
 {
   "csharpApiExplorer.excludePatterns": [
@@ -73,3 +81,51 @@ A powerful VS Code extension for navigating, analyzing, and managing C# Web API 
     "**/wwwroot/lib/**"
   ]
 }
+```
+
+### 路由排序 | Route Sorting
+
+- **`csharpApiExplorer.sortAliasFirst`**：有别名的路由是否置顶显示（默认 `false`）  
+  **`csharpApiExplorer.sortAliasFirst`**: Place routes with aliases at the top (default: `false`)
+
+- **`csharpApiExplorer.sortByRoutePath`**：是否按路由路径字母顺序排序，否则按文件中定义顺序（默认 `false`）  
+  **`csharpApiExplorer.sortByRoutePath`**: Sort routes alphabetically by path, otherwise by file order (default: `false`)
+
+---
+
+### 路由变量配置 | Route Variable Configuration
+
+支持为路由约束变量定义替换值。点击工具栏的 **"变量配置"** 按钮，将在 `.vscode` 目录下创建 `csharp-api-explorer-variables.json` 文件。  
+Define substitution values for route constraint variables. Click the **"Variable Configuration"** button in the toolbar to create `csharp-api-explorer-variables.json` in the `.vscode` folder.
+
+**示例场景 | Example Scenario:**
+
+假设你的控制器定义如下：  
+Suppose your controller is defined as:
+
+```csharp
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+public class TestController : ControllerBase
+{
+    [HttpGet]
+    public IActionResult Get() => Ok();
+}
+```
+
+配置变量替换：  
+Configure variable substitution:
+
+```json
+{
+  "version:apiversion": "1.0"
+}
+```
+
+**效果 | Result:**
+
+- 原始路由 | Original route: `/api/v{version:apiversion}/test`
+- 复制路由结果 | Copied route: `http://localhost:5000/api/v1.0/test`
+
+变量会自动替换为配置的值，便于直接使用！  
+Variables are automatically replaced with configured values for instant use!

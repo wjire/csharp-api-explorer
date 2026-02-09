@@ -21,6 +21,29 @@ All notable changes to this project will be documented in this file.
   - 当两个配置都为 `false` 时，路由按文件中的 action 顺序显示  
     When both are `false`, routes are displayed in the order they appear in the controller file
 
+### ⚡ 性能优化 | Performance Improvements
+
+- 🚀 **项目文件缓存**：实现两级缓存机制，大幅提升路由扫描性能  
+  **Project file caching**: Implemented two-tier caching mechanism to significantly improve route scanning performance
+  
+  - 第一层缓存：Controller 文件路径 → 项目根目录（避免重复的文件系统查找）  
+    First-tier cache: Controller file path → Project root directory (avoid redundant file system lookups)
+  
+  - 第二层缓存：项目根目录 → Base URL（避免重复读取 launchSettings.json）  
+    Second-tier cache: Project root directory → Base URL (avoid redundant launchSettings.json reads)
+  
+  - 自动监听 `launchSettings.json` 文件变化，配置变更时自动失效对应缓存  
+    Automatically watch `launchSettings.json` file changes, invalidate cache when configuration changes
+
+- ⚡ **树节点分组缓存**：缓存项目和控制器分组结果，优化树视图展开性能  
+  **Tree node grouping cache**: Cache project and controller grouping results to optimize tree view expansion
+  
+  - 延迟缓存策略：仅在首次展开时计算，后续访问直接返回缓存结果  
+    Lazy caching strategy: Calculate only on first expansion, return cached results for subsequent access
+  
+  - 数据变化时自动清除缓存（搜索、刷新、修改别名）  
+    Automatically clear cache when data changes (search, refresh, alias modification)
+
 ---
 
 ## [1.0.3] - 2026-02-08

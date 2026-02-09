@@ -19,6 +19,11 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     private routes: RouteInfo[] = [];
     private filteredRoutes: RouteInfo[] = [];
     private searchText: string = '';
+    private previousSearchText: string = '';
+
+    // 树节点分组缓存
+    private projectGroupsCache?: ProjectGroupItem[];
+    private controllerGroupsCache = new Map<string, ControllerGroupItem[]>();
 
     /**
      * 获取当前搜索文本
@@ -51,6 +56,7 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      */
     setRoutes(routes: RouteInfo[]): void {
         this.routes = routes;
+        this.previousSearchText = ''; // 清除搜索历史
         this.applyFilter();
     }
 
@@ -63,13 +69,22 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     }
 
     /**
-     * 应用过滤
+     * 应用过滤（支持增量搜索优化）
      */
     private applyFilter(): void {
         if (!this.searchText) {
             this.filteredRoutes = [...this.routes];
+            this.previousSearchText = '';
         } else {
-            this.filteredRoutes = this.routes.filter(route => {
+            // 增量搜索优化：如果新搜索词是上次搜索词的扩展，则在已过滤结果中搜索
+            const canUseIncremental =
+                this.previousSearchText &&
+                this.searchText.startsWith(this.previousSearchText) &&
+                this.filteredRoutes.length > 0;
+
+            const sourceRoutes = canUseIncremental ? this.filteredRoutes : this.routes;
+
+            this.filteredRoutes = sourceRoutes.filter(route => {
                 const alias = route.alias || '';
                 return (
                     route.route.toLowerCase().includes(this.searchText) ||
@@ -79,11 +94,23 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
                     route.httpVerb.toLowerCase().includes(this.searchText)
                 );
             });
+
+            this.previousSearchText = this.searchText;
         }
 
         // 排序：有别名的排在前面
         this.sortRoutes();
+        // 清除树节点缓存
+        this.clearTreeCache();
         this.refresh();
+    }
+
+    /**
+     * 清除树节点分组缓存
+     */
+    private clearTreeCache(): void {
+        this.projectGroupsCache = undefined;
+        this.controllerGroupsCache.clear();
     }
 
     /**
@@ -135,6 +162,8 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
 
         // 重新排序并刷新视图
         this.sortRoutes();
+        // 清除树节点缓存
+        this.clearTreeCache();
         this.refresh();
     }
 
@@ -175,9 +204,15 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     }
 
     /**
-     * 获取项目分组
+     * 获取项目分组（带缓存）
      */
     private getProjectGroups(): ProjectGroupItem[] {
+        // 检查缓存
+        if (this.projectGroupsCache) {
+            return this.projectGroupsCache;
+        }
+
+        // 缓存未命中，重新计算
         // 按项目路径分组
         const projectMap = new Map<string, RouteInfo[]>();
 
@@ -203,13 +238,22 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
             return aLabel.localeCompare(bLabel);
         });
 
+        // 存入缓存
+        this.projectGroupsCache = groups;
+
         return groups;
     }
 
     /**
-     * 获取控制器分组
+     * 获取控制器分组（带缓存）
      */
     private getControllerGroups(projectPath: string): ControllerGroupItem[] {
+        // 检查缓存
+        if (this.controllerGroupsCache.has(projectPath)) {
+            return this.controllerGroupsCache.get(projectPath)!;
+        }
+
+        // 缓存未命中，重新计算
         // 获取该项目下的所有路由
         const projectRoutes = this.filteredRoutes.filter(
             route => route.projectPath === projectPath
@@ -238,6 +282,9 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
             const bLabel = typeof b.label === 'string' ? b.label : '';
             return aLabel.localeCompare(bLabel);
         });
+
+        // 存入缓存
+        this.controllerGroupsCache.set(projectPath, groups);
 
         return groups;
     }

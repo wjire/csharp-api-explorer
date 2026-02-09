@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.5] - 2026-02-09
+
+### 📝 文档更新 | Documentation
+
+- 📖 **功能描述优化**：调整 README 中的功能描述，避免误导  
+  **Feature description refinement**: Updated README to clarify extension capabilities
+  
+  - 标题由"调试"改为"管理"，更准确反映插件定位为路由管理工具  
+    Changed title from "debug" to "manage" to better reflect the extension's role as a route management tool
+  
+  - 明确"项目启动"功能是指以调试模式启动项目，而非调试路由本身  
+    Clarified that "project launch" refers to starting projects in debug mode, not debugging routes themselves
+
+---
+
 ## [1.0.4] - 2026-02-09
 
 ### ✨ 新功能 | New Features

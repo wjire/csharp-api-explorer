@@ -1,7 +1,7 @@
 {
     "name": "csharp-api-explorer",
     "displayName": "C# API Explorer",
-    "description": "A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and debug your API routes effortlessly.",
+    "description": "A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and manage your API routes effortlessly.",
     "version": "1.0.5",
     "publisher": "dankit",
     "icon": "resources/icons/icon.png",
@@ -29,7 +29,7 @@
         "web api",
         "route analyzer",
         "api explorer",
-        "debug"
+        "route management"
     ],
     "galleryBanner": {
         "color": "#007ACC",

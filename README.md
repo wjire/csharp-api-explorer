@@ -1,6 +1,6 @@
 # C# API Explorer
 
-🔍 **可视化探索、搜索与调试 ASP.NET Core API 路由**  
+🔍 **可视化探索、搜索与管理 ASP.NET Core API 路由**  
 A powerful VS Code extension for navigating, analyzing, and managing C# Web API endpoints.
 
 ---
@@ -30,8 +30,8 @@ A powerful VS Code extension for navigating, analyzing, and managing C# Web API 
 - 📂 **项目分组**：按项目和控制器分组展示路由结构  
   **Project grouping**: Organize routes by project and controller
 
-- 🚀 **运行与调试**：支持 dotnet run 和调试启动，自动注入环境变量  
-  **Run & debug support**: Launch or debug projects with environment variables from launchSettings.json
+- 🚀 **项目启动**：支持以 dotnet run 或调试模式启动项目，自动注入 launchSettings.json 环境变量  
+  **Project launch**: Start or debug projects with automatic environment variable injection from launchSettings.json
 
 - 🔧 **路由变量替换**：支持 ASP.NET Core 路由约束变量（如 `{version:apiVersion}`），通过配置文件定义变量值，复制路由时自动替换  
   **Route variable substitution**: Automatically replaces route constraint variables (e.g., `{version:apiVersion}`) with configured values when copying routes

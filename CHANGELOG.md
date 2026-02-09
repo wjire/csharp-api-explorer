@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.4] - 2026-02-09
+
+### ✨ 新功能 | New Features
+
+- ⚙️ **路由排序配置**：新增可配置的路由排序选项  
+  **Route sorting configuration**: Added configurable route sorting options
+  
+  - `sortAliasFirst`（默认 `false`）：有别名的路由是否置顶  
+    `sortAliasFirst` (default `false`): Whether routes with aliases should be placed at the top
+  
+  - `sortByRoutePath`（默认 `false`）：是否按路由路径字母顺序排序  
+    `sortByRoutePath` (default `false`): Whether to sort routes by path alphabetically
+  
+  - 当两个配置都为 `false` 时，路由按文件中的 action 顺序显示  
+    When both are `false`, routes are displayed in the order they appear in the controller file
+
+---
+
 ## [1.0.3] - 2026-02-08
 
 ### 🐛 修复 | Bug Fixes

@@ -2,7 +2,7 @@
     "name": "csharp-api-explorer",
     "displayName": "C# API Explorer",
     "description": "A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and debug your API routes effortlessly.",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "publisher": "dankit",
     "icon": "resources/icons/icon.png",
     "repository": {
@@ -176,6 +176,16 @@
                         "**/wwwroot/lib/**"
                     ],
                     "description": "排除的文件模式(Files to exclude)"
+                },
+                "csharpApiExplorer.sortAliasFirst": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "有别名的路由是否置顶 (Whether routes with aliases should be placed at the top)"
+                },
+                "csharpApiExplorer.sortByRoutePath": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "是否按路由路径字母顺序排序，否则按文件中的顺序 (Whether to sort routes by path alphabetically, otherwise by file order)"
                 }
             }
         }

@@ -90,17 +90,30 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 排序路由
      */
     private sortRoutes(): void {
-        this.filteredRoutes.sort((a, b) => {
-            // 首先按是否有别名排序
-            const aHasAlias = !!a.alias;
-            const bHasAlias = !!b.alias;
+        // 读取排序配置
+        const config = vscode.workspace.getConfiguration('csharpApiExplorer');
+        const sortAliasFirst = config.get<boolean>('sortAliasFirst', false);
+        const sortByRoutePath = config.get<boolean>('sortByRoutePath', false);
 
-            if (aHasAlias !== bHasAlias) {
-                return aHasAlias ? -1 : 1;
+        this.filteredRoutes.sort((a, b) => {
+            // 1. 如果启用了别名置顶，先按是否有别名排序
+            if (sortAliasFirst) {
+                const aHasAlias = !!a.alias;
+                const bHasAlias = !!b.alias;
+
+                if (aHasAlias !== bHasAlias) {
+                    return aHasAlias ? -1 : 1;
+                }
             }
 
-            // 按路由路径排序
-            return a.route.localeCompare(b.route);
+            // 2. 根据配置决定后续排序方式
+            if (sortByRoutePath) {
+                // 按路由路径字母顺序排序
+                return a.route.localeCompare(b.route);
+            } else {
+                // 按文件中的行号排序（控制器中的 action 顺序）
+                return a.lineNumber - b.lineNumber;
+            }
         });
     }
 

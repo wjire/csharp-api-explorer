@@ -33,8 +33,8 @@ A powerful VS Code extension for navigating, analyzing, and managing C# Web API 
 - 🚀 **项目启动**：支持以 dotnet run 或调试模式启动项目，自动注入 launchSettings.json 环境变量  
   **Project launch**: Start or debug projects with automatic environment variable injection from launchSettings.json
 
-- 🔧 **路由变量替换**：支持 ASP.NET Core 路由约束变量（如 `{version:apiVersion}`），通过配置文件定义变量值，复制路由时自动替换  
-  **Route variable substitution**: Automatically replaces route constraint variables (e.g., `{version:apiVersion}`) with configured values when copying routes
+- 🔧 **API 版本自动解析**：自动识别 `[ApiVersion]` 特性，替换路由中带 `:apiVersion` 约束的占位符（变量名任意，如 `{version:apiVersion}`, `{v:apiVersion}`）  
+  **API version auto-parsing**: Automatically recognizes `[ApiVersion]` attributes and replaces placeholders with `:apiVersion` constraint (variable name can be anything, e.g., `{version:apiVersion}`, `{v:apiVersion}`)
 
 ---
 
@@ -46,8 +46,8 @@ A powerful VS Code extension for navigating, analyzing, and managing C# Web API 
 - 🧾 **清晰结构**：项目 → 控制器 → 路由，层级分明  
   **Tree structure**: Clean hierarchy from project to controller to route
 
-- 🛠️ **工具栏操作**：搜索、刷新、配置按钮一应俱全  
-  **Toolbar actions**: Quick access to search, refresh, and variable configuration
+- 🧰 **工具栏操作**：搜索、刷新按钮一应俱全  
+  **Toolbar actions**: Quick access to search and refresh
 
 ---
 
@@ -91,14 +91,17 @@ Configure directory patterns to exclude during route scanning:
 - **`csharpApiExplorer.sortByRoutePath`**：是否按路由路径字母顺序排序，否则按文件中定义顺序（默认 `false`）  
   **`csharpApiExplorer.sortByRoutePath`**: Sort routes alphabetically by path, otherwise by file order (default: `false`)
 
+- **`csharpApiExplorer.defaultApiVersion`**：当控制器没有 `[ApiVersion]` 特性时使用的默认版本号（默认 `1.0`，与 ASP.NET Core 官方默认值一致），设置为空字符串则保持占位符不替换  
+  **`csharpApiExplorer.defaultApiVersion`**: Default API version when controller has no `[ApiVersion]` attribute (default: `1.0`, same as ASP.NET Core official default), set to empty string to keep placeholder
+
 ---
 
-### 路由变量配置 | Route Variable Configuration
+### API 版本自动解析 | API Version Auto-Parsing
 
-支持为路由约束变量定义替换值。点击工具栏的 **"变量配置"** 按钮，将在 `.vscode` 目录下创建 `csharp-api-explorer-variables.json` 文件。  
-Define substitution values for route constraint variables. Click the **"Variable Configuration"** button in the toolbar to create `csharp-api-explorer-variables.json` in the `.vscode` folder.
+插件自动识别 ASP.NET Core 的 API 版本管理特性，无需手动配置。  
+The extension automatically recognizes ASP.NET Core API versioning attributes without manual configuration.
 
-**示例场景 | Example Scenario:**
+**示例 | Example:**
 
 假设你的控制器定义如下：  
 Suppose your controller is defined as:
@@ -106,26 +109,54 @@ Suppose your controller is defined as:
 ```csharp
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class TestController : ControllerBase
+public class UsersController : ControllerBase
 {
     [HttpGet]
-    public IActionResult Get() => Ok();
+    public IActionResult GetAll() => Ok();
 }
 ```
 
-配置变量替换：  
-Configure variable substitution:
+**自动解析结果 | Auto-parsed Result:**
+
+- 插件自动提取 `[ApiVersion("1.0")]` 中的版本号  
+  The extension automatically extracts the version from `[ApiVersion("1.0")]`
+
+- 替换路由中的 `{version:apiVersion}` 占位符  
+  Replaces the `{version:apiVersion}` placeholder in the route
+
+- **最终路由** | **Final route**: `/api/v1.0/users`
+
+**支持的占位符格式 | Supported Placeholder Formats:**
+
+- `{version:apiVersion}` ✓
+- `{v:apiVersion}` ✓  
+- `{任意名称:apiVersion}` ✓  
+  `{anyName:apiVersion}` ✓
+
+**关键说明 | Key Point:**
+
+重要的是 `:apiVersion` 约束，而不是前面的变量名。变量名（`version`、`v` 等）可以任意定义。  
+The `:apiVersion` constraint is what matters, not the variable name. The variable name (`version`, `v`, etc.) can be anything you choose.
+
+**默认版本配置 | Default Version Configuration:**
+
+如果控制器没有 `[ApiVersion]` 特性，插件会使用默认版本 `1.0`（与 ASP.NET Core 官方默认值一致）：  
+If a controller has no `[ApiVersion]` attribute, the extension uses default version `1.0` (same as ASP.NET Core official default):
 
 ```json
 {
-  "version:apiversion": "1.0"
+  "csharpApiExplorer.defaultApiVersion": "1.0"  // 默认值 (default value)
 }
 ```
 
-**效果 | Result:**
+- ✅ 有 `[ApiVersion("2.0")]` 特性 → 使用 `2.0`（优先）  
+  Has `[ApiVersion("2.0")]` attribute → Use `2.0` (priority)
 
-- 原始路由 | Original route: `/api/v{version:apiversion}/test`
-- 复制路由结果 | Copied route: `http://localhost:5000/api/v1.0/test`
+- ✅ 无特性，使用配置的默认版本 → 使用 `1.0`（默认）  
+  No attribute, use configured default → Use `1.0` (default)
 
-变量会自动替换为配置的值，便于直接使用！  
-Variables are automatically replaced with configured values for instant use!
+- ✅ 无特性，配置设为空字符串 `""` → 保持 `{version:apiVersion}` 不替换  
+  No attribute, config set to empty `""` → Keep `{version:apiVersion}` placeholder
+
+>💡 **提示** | **Tip**: 这是 ASP.NET Core 官方的 API 版本管理方式（需要 `Microsoft.AspNetCore.Mvc.Versioning` 包），插件自动支持，无需额外配置。  
+>This is the official ASP.NET Core API versioning approach (requires `Microsoft.AspNetCore.Mvc.Versioning` package). The extension automatically supports it without additional configuration.

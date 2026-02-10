@@ -2,7 +2,7 @@
     "name": "csharp-api-explorer",
     "displayName": "C# API Explorer",
     "description": "A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and manage your API routes effortlessly.",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "publisher": "dankit",
     "icon": "resources/icons/icon.png",
     "repository": {
@@ -80,11 +80,6 @@
                 "icon": "$(clear-all)"
             },
             {
-                "command": "csharpApiExplorer.config",
-                "title": "变量配置 (Variables)",
-                "icon": "$(gear)"
-            },
-            {
                 "command": "csharpApiExplorer.setAlias",
                 "title": "设置别名 (Set Alias)"
             },
@@ -118,14 +113,9 @@
                     "group": "navigation@2"
                 },
                 {
-                    "command": "csharpApiExplorer.config",
-                    "when": "view == csharpApiExplorer.routesList",
-                    "group": "navigation@3"
-                },
-                {
                     "command": "csharpApiExplorer.refresh",
                     "when": "view == csharpApiExplorer.routesList",
-                    "group": "navigation@4"
+                    "group": "navigation@3"
                 }
             ],
             "view/item/context": [
@@ -186,6 +176,11 @@
                     "type": "boolean",
                     "default": false,
                     "description": "是否按路由路径字母顺序排序，否则按文件中的顺序 (Whether to sort routes by path alphabetically, otherwise by file order)"
+                },
+                "csharpApiExplorer.defaultApiVersion": {
+                    "type": "string",
+                    "default": "1.0",
+                    "description": "当控制器没有 [ApiVersion] 特性时使用的默认版本号（默认 '1.0'，与 ASP.NET Core 官方默认值一致） (Default API version when controller has no [ApiVersion] attribute (default: '1.0', same as ASP.NET Core official default))"
                 }
             }
         }

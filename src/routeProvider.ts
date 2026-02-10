@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { RouteInfo } from './models/route';
 import { AliasManager } from './aliasManager';
-import { ConfigManager } from './configManager';
 import { lang } from './languageManager';
 
 /**
@@ -40,8 +39,7 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     }
 
     constructor(
-        private aliasManager: AliasManager,
-        private configManager: ConfigManager
+        private aliasManager: AliasManager
     ) { }
 
     /**
@@ -195,7 +193,7 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
                     route.projectPath === element.projectPath &&
                     route.controller === element.controllerName
                 )
-                .map(route => new RouteTreeItem(route, this.configManager));
+                .map(route => new RouteTreeItem(route));
             return Promise.resolve(controllerRoutes);
         }
 
@@ -293,7 +291,7 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 根据路由信息查找TreeItem
      */
     findTreeItem(route: RouteInfo): RouteTreeItem | undefined {
-        return new RouteTreeItem(route, this.configManager);
+        return new RouteTreeItem(route);
     }
 }
 
@@ -374,14 +372,10 @@ export class RouteTreeItem extends vscode.TreeItem {
     public readonly displayRoute: string;
 
     constructor(
-        public readonly routeInfo: RouteInfo,
-        private configManager?: ConfigManager
+        public readonly routeInfo: RouteInfo
     ) {
-        // 替换路由中的变量
-        const originalRoute = routeInfo.route.toLowerCase();
-        const displayRoute = configManager
-            ? configManager.replaceRouteVariables(originalRoute)
-            : originalRoute;
+        // 使用解析后的路由（已自动处理 ApiVersion）
+        const displayRoute = routeInfo.route.toLowerCase();
 
         // 优先显示action路由部分，如果没有则显示完整路由
         let shortRoute = displayRoute;

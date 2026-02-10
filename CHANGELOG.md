@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.6] - 2026-02-10
+
+### ✨ 新功能 | New Features
+
+- 🔧 **ApiVersion 自动解析**：自动识别 `[ApiVersion]` 特性并替换路由中的版本占位符  
+  **ApiVersion auto-parsing**: Automatically recognize `[ApiVersion]` attributes and replace version placeholders in routes
+  
+  - 支持 ASP.NET Core 官方的 API 版本管理方式（`Microsoft.AspNetCore.Mvc.Versioning`）  
+    Support official ASP.NET Core API versioning approach (`Microsoft.AspNetCore.Mvc.Versioning`)
+  
+  - 自动从 `[ApiVersion("x.x")]` 特性提取版本号  
+    Automatically extract version number from `[ApiVersion("x.x")]` attribute
+  
+  - 替换路由中的 `{xxx:apiVersion}` 占位符（如 `{version:apiVersion}`, `{v:apiVersion}` 等）  
+    Replace `{xxx:apiVersion}` placeholders in routes (e.g., `{version:apiVersion}`, `{v:apiVersion}`, etc.)
+  
+  - 支持配置默认版本：当控制器没有 `[ApiVersion]` 特性时，可通过 `defaultApiVersion` 配置项设置默认版本号（默认 `1.0`，与 ASP.NET Core 官方保持一致）  
+    Support default version configuration: When a controller has no `[ApiVersion]` attribute, use `defaultApiVersion` setting as fallback (default: `1.0`, same as ASP.NET Core official default)
+  
+  - 示例：`[ApiVersion("1.0")]` + `[Route("api/v{version:apiVersion}/[controller]")]` → `/api/v1.0/controller`  
+    Example: `[ApiVersion("1.0")]` + `[Route("api/v{version:apiVersion}/[controller]")]` → `/api/v1.0/controller`
+
+### 🗑️ 移除功能 | Removed Features
+
+- ❌ **移除手动变量配置**：移除了 `csharp-api-explorer-variables.json` 配置文件和"变量配置"按钮  
+  **Removed manual variable configuration**: Removed `csharp-api-explorer-variables.json` config file and "Variable Configuration" button
+  
+  - 原因：ASP.NET Core 不支持自定义静态占位符，仅支持框架预定义的占位符  
+    Reason: ASP.NET Core doesn't support custom static placeholders, only framework-defined placeholders
+  
+  - 路由参数（如 `{id}`, `{name}`）是运行时参数，无法静态替换  
+    Route parameters (like `{id}`, `{name}`) are runtime parameters and cannot be statically replaced
+  
+  - API 版本现在通过 `[ApiVersion]` 特性自动解析，无需手动配置  
+    API versions are now automatically parsed from `[ApiVersion]` attributes without manual configuration
+
+### 📝 文档更新 | Documentation
+
+- 📖 更新 README，说明 ApiVersion 自动解析功能  
+  Updated README to explain ApiVersion auto-parsing feature
+
+- 📖 移除了手动变量配置的说明文档  
+  Removed manual variable configuration documentation
+
+---
+
 ## [1.0.5] - 2026-02-09
 
 ### 📝 文档更新 | Documentation

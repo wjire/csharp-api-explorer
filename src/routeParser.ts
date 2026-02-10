@@ -14,6 +14,9 @@ export class RouteParser {
     // 匹配 Controller 上的 Route 特性
     private readonly controllerRouteRegex = /\[Route\s*\(\s*"([^"]+)"\s*\)\s*\]/g;
 
+    // 匹配 ApiVersion 特性
+    private readonly apiVersionRegex = /\[ApiVersion\s*\(\s*"([^"]+)"\s*\)\s*\]/g;
+
     // 匹配 HTTP 方法特性（支持无括号、空括号、带路径、多特性逗号分隔）
     private readonly httpMethodRegex = /\b(HttpGet|HttpPost|HttpPut|HttpDelete)(?:\s*\(\s*(?:"([^"]*)")?\s*\))?(?=\s*[,\]])/g;
 
@@ -133,11 +136,13 @@ export class RouteParser {
         name: string;
         lineNumber: number;
         baseRoute?: string;
+        apiVersion?: string;
     }> {
         const controllers: Array<{
             name: string;
             lineNumber: number;
             baseRoute?: string;
+            apiVersion?: string;
         }> = [];
 
         // 重置正则表达式
@@ -150,15 +155,16 @@ export class RouteParser {
             // 找到控制器所在的行号
             const lineNumber = this.getLineNumber(content, match.index);
 
-            // 查找控制器上的 Route 特性
-            const baseRoute = this.findControllerRoute(lines, lineNumber);
+            // 查找控制器上的 Route 特性和 ApiVersion 特性
+            const { baseRoute, apiVersion } = this.findControllerAttributes(lines, lineNumber);
 
             // 只添加以 Controller 结尾的类
             if (controllerName.endsWith('Controller')) {
                 controllers.push({
                     name: controllerName,
                     lineNumber,
-                    baseRoute
+                    baseRoute,
+                    apiVersion
                 });
             }
         }
@@ -167,30 +173,54 @@ export class RouteParser {
     }
 
     /**
-     * 查找 Controller 上的 Route 特性
+     * 查找 Controller 上的 Route 特性和 ApiVersion 特性
      */
-    private findControllerRoute(lines: string[], controllerLineNumber: number): string | undefined {
+    private findControllerAttributes(lines: string[], controllerLineNumber: number): { baseRoute?: string; apiVersion?: string } {
         // 向上查找最多10行
         const startLine = Math.max(0, controllerLineNumber - 10);
+        let baseRoute: string | undefined;
+        let apiVersion: string | undefined;
 
         for (let i = controllerLineNumber - 1; i >= startLine; i--) {
             const line = lines[i];
-            this.controllerRouteRegex.lastIndex = 0;
-            const match = this.controllerRouteRegex.exec(line);
 
-            if (match) {
-                return match[1];
+            // 跳过注释行
+            if (this.isCommentLine(line)) {
+                continue;
+            }
+
+            // 查找 Route 特性
+            if (!baseRoute) {
+                this.controllerRouteRegex.lastIndex = 0;
+                const routeMatch = this.controllerRouteRegex.exec(line);
+                if (routeMatch) {
+                    baseRoute = routeMatch[1];
+                }
+            }
+
+            // 查找 ApiVersion 特性
+            if (!apiVersion) {
+                this.apiVersionRegex.lastIndex = 0;
+                const versionMatch = this.apiVersionRegex.exec(line);
+                if (versionMatch) {
+                    apiVersion = versionMatch[1];
+                }
+            }
+
+            // 如果两个都找到了，提前退出
+            if (baseRoute && apiVersion) {
+                break;
             }
         }
 
-        return undefined;
+        return { baseRoute, apiVersion };
     }
 
     /**
      * 解析 Controller 中的所有路由
      */
     private parseController(
-        controller: { name: string; lineNumber: number; baseRoute?: string },
+        controller: { name: string; lineNumber: number; baseRoute?: string; apiVersion?: string },
         lines: string[],
         filePath: string,
         projectPath?: string
@@ -207,6 +237,7 @@ export class RouteParser {
                 i,
                 controller.name,
                 controller.baseRoute,
+                controller.apiVersion,
                 filePath,
                 projectPath
             );
@@ -227,6 +258,7 @@ export class RouteParser {
         lineIndex: number,
         controllerName: string,
         baseRoute: string | undefined,
+        apiVersion: string | undefined,
         filePath: string,
         projectPath?: string
     ): RouteInfo | null {
@@ -309,7 +341,7 @@ export class RouteParser {
         // 满足以上条件时，该方法接受所有 HTTP 动词
 
         // 构建完整路由
-        const fullRoute = this.buildFullRoute(baseRoute, actionRoute, controllerName, actionName);
+        const fullRoute = this.buildFullRoute(baseRoute, actionRoute, controllerName, actionName, apiVersion);
 
         return {
             route: fullRoute,
@@ -331,7 +363,8 @@ export class RouteParser {
         baseRoute: string | undefined,
         actionRoute: string,
         controllerName: string,
-        actionName: string
+        actionName: string,
+        apiVersion?: string
     ): string {
         let route = '';
 
@@ -346,6 +379,21 @@ export class RouteParser {
             // 替换 [action] 占位符 - 去掉 Async 后缀，转换为小写（ASP.NET Core 约定）
             const actionShortName = actionName.replace(/Async$/i, '').toLowerCase();
             route = route.replace(/\[action\]/gi, actionShortName);
+
+            // 替换 {xxx:apiVersion} 占位符
+            // 匹配任意变量名的 apiVersion 约束，如 {version:apiVersion}, {v:apiVersion}
+            // 优先使用 [ApiVersion] 特性的值，否则使用配置的默认值
+            let versionToUse = apiVersion;
+            if (!versionToUse) {
+                const config = vscode.workspace.getConfiguration('csharpApiExplorer');
+                const defaultVersion = config.get<string>('defaultApiVersion', '');
+                if (defaultVersion) {
+                    versionToUse = defaultVersion;
+                }
+            }
+            if (versionToUse) {
+                route = route.replace(/\{[^:}]+:apiVersion\}/gi, versionToUse);
+            }
         }
 
         // 2. 拼接 Action 路由

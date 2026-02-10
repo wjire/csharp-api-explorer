@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import { RouteProvider, RouteTreeItem } from './routeProvider';
 import { RouteParser } from './routeParser';
 import { AliasManager } from './aliasManager';
-import { ConfigManager } from './configManager';
 import { ProjectConfigCache } from './projectConfigCache';
 import { lang } from './languageManager';
 
@@ -31,9 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
     // 初始化管理器
     const projectConfigCache = new ProjectConfigCache();
     const aliasManager = new AliasManager(workspaceRoot);
-    const configManager = new ConfigManager(workspaceRoot);
     const routeParser = new RouteParser(projectConfigCache);
-    const routeProvider = new RouteProvider(aliasManager, configManager);
+    const routeProvider = new RouteProvider(aliasManager);
 
     // 创建TreeView
     const treeView = vscode.window.createTreeView('csharpApiExplorer.routesList', {
@@ -46,7 +44,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     async function initialize() {
         await aliasManager.load();
-        await configManager.load();
         await refreshRoutes();
     }
 
@@ -100,13 +97,6 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
     }
-
-    // 注册命令：变量配置
-    context.subscriptions.push(
-        vscode.commands.registerCommand('csharpApiExplorer.config', async () => {
-            await configManager.openConfigFile();
-        })
-    );
 
     // 注册命令：刷新
     context.subscriptions.push(
@@ -489,18 +479,6 @@ export function activate(context: vscode.ExtensionContext) {
             return n >= 0 && n <= 255 && /^\d+$/.test(p);
         });
     }
-
-    // 监听配置文件变化
-    context.subscriptions.push(
-        vscode.workspace.onDidSaveTextDocument(async (document) => {
-            // 监听路由变量配置文件的变化
-            if (document.fileName.endsWith('csharp-api-explorer-variables.json')) {
-                console.log(lang.t('config.reloaded'));
-                await configManager.load();
-                routeProvider.refresh();
-            }
-        })
-    );
 
     // 添加到订阅列表
     context.subscriptions.push(treeView);

@@ -91,6 +91,8 @@ Configure directory patterns to exclude during route scanning:
 - **`csharpApiExplorer.sortByRoutePath`**：是否按路由路径字母顺序排序，否则按文件中定义顺序（默认 `false`）  
   **`csharpApiExplorer.sortByRoutePath`**: Sort routes alphabetically by path, otherwise by file order (default: `false`)
 
+### API 版本配置 | API Version Configuration
+
 - **`csharpApiExplorer.defaultApiVersion`**：当控制器没有 `[ApiVersion]` 特性时使用的默认版本号（默认 `1.0`，与 ASP.NET Core 官方默认值一致），设置为空字符串则保持占位符不替换  
   **`csharpApiExplorer.defaultApiVersion`**: Default API version when controller has no `[ApiVersion]` attribute (default: `1.0`, same as ASP.NET Core official default), set to empty string to keep placeholder
 

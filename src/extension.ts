@@ -277,15 +277,18 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        // 读取 launchSettings.json 获取环境变量
-        var projectProfile = getProjectProfile(projectPath);
+        // 读取 launchSettings.json 获取 profile 配置
+        const profileData = getProjectProfile(projectPath);
         let envFromLaunchSettings: Record<string, string> = {};
-        if (projectProfile?.environmentVariables) {
-            envFromLaunchSettings = projectProfile.environmentVariables;
+        let profileName: string | undefined = undefined;
+
+        if (profileData) {
+            profileName = profileData.profileName;
+            envFromLaunchSettings = profileData.profile.environmentVariables ?? {};
         }
 
         // 构造动态调试配置
-        const debugConfig = {
+        const debugConfig: any = {
             name: lang.t('debug.configName', projectName),
             type: "coreclr",
             request: "launch",
@@ -298,6 +301,11 @@ export function activate(context: vscode.ExtensionContext) {
             console: "integratedTerminal",
             stopAtEntry: false
         };
+
+        // 指定使用的 launchSettings.json profile，确保调试器使用相同的配置
+        if (profileName) {
+            debugConfig.launchSettingsProfile = profileName;
+        }
 
         // 获取 workspaceFolder（可能为 undefined）
         const workspaceFolder =
@@ -327,8 +335,8 @@ export function activate(context: vscode.ExtensionContext) {
         const projectName = path.basename(projectPath, ".csproj");
 
         // 读取 launchSettings.json 的环境变量
-        const profile = getProjectProfile(projectPath);
-        const envFromLaunchSettings = profile?.environmentVariables ?? {};
+        const profileData = getProjectProfile(projectPath);
+        const envFromLaunchSettings = profileData?.profile?.environmentVariables ?? {};
 
         // 创建带环境变量的终端（每次都创建新的）
         const terminal = vscode.window.createTerminal({
@@ -388,8 +396,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     /**
      * 从 launchSettings.json 中获取 Project Profile
+     * @returns { profileName: string, profile: any } | null
      */
-    function getProjectProfile(projectPath: string | undefined) {
+    function getProjectProfile(projectPath: string | undefined): { profileName: string, profile: any } | null {
         const path = require("path");
         const fs = require("fs");
 
@@ -412,12 +421,15 @@ export function activate(context: vscode.ExtensionContext) {
             const json = JSON.parse(content);
             const profiles = json.profiles ?? {};
 
-            // 找到 commandName = "Project" 的 profile
-            const projectProfile = Object.values(profiles).find(
-                (p: any) => p.commandName === "Project"
-            ) as any;
+            // 找到第一个 commandName = "Project" 的 profile
+            for (const [profileName, profileConfig] of Object.entries(profiles)) {
+                const p = profileConfig as any;
+                if (p.commandName === "Project") {
+                    return { profileName, profile: p };
+                }
+            }
 
-            return projectProfile ?? null;
+            return null;
         } catch {
             return null;
         }

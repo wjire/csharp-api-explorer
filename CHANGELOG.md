@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.7] - 2026-02-10
+
+### 🐛 Bug 修复 | Bug Fixes
+
+- 🔧 **修复调试配置混淆问题**：修复启动调试时 launchSettings.json 配置读取不一致的严重 BUG  
+  **Fixed debug configuration confusion**: Fixed critical bug where launchSettings.json configuration was inconsistently read during debug startup
+  
+  - 问题：调试时监听端点和环境变量来自不同的 profile（例如监听端口来自 https profile，但环境变量来自 http profile）  
+    Issue: During debugging, listening endpoints and environment variables came from different profiles (e.g., ports from https profile, but env vars from http profile)
+  
+  - 修复：在调试配置中添加 `launchSettingsProfile` 属性，明确指定使用哪个 profile，确保所有配置（端口、环境变量等）来自同一个 profile  
+    Fix: Added `launchSettingsProfile` property in debug configuration to explicitly specify which profile to use, ensuring all configurations (ports, env vars, etc.) come from the same profile
+  
+  - 影响：确保 "启动项目" 和 "调试项目" 使用相同的配置，避免配置混乱  
+    Impact: Ensures "Run Project" and "Debug Project" use the same configuration, avoiding configuration confusion
+
+### 📝 文档更新 | Documentation
+
+- 📖 更新 README，新增"功能说明"章节，详细说明 LaunchSettings.json 配置读取逻辑  
+  Updated README with new "How It Works" section explaining LaunchSettings.json configuration reading logic
+  
+  - 说明扩展读取第一个 `commandName = "Project"` 的 profile  
+    Explains how the extension reads the first profile with `commandName = "Project"`
+  
+  - 详细描述 `applicationUrl` 和 `environmentVariables` 的提取逻辑  
+    Details the extraction logic for `applicationUrl` and `environmentVariables`
+  
+  - 展示配置示例和调试时的 profile 指定机制  
+    Shows configuration examples and the profile specification mechanism during debugging
+
+---
+
 ## [1.0.6] - 2026-02-10
 
 ### ✨ 新功能 | New Features

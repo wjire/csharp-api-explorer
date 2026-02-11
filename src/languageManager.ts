@@ -142,8 +142,6 @@ export class LanguageManager {
 
         // 判断是否为中文环境
         this.currentLanguage = vscodeLanguage.startsWith('zh') ? 'zh-cn' : 'en';
-
-        console.log(`Language Manager initialized: ${this.currentLanguage}`);
     }
 
     /**

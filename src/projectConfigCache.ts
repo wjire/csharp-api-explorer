@@ -34,14 +34,12 @@ export class ProjectConfigCache {
         // 文件变化时，清除对应项目的 Base URL 缓存
         this.fileWatcher.onDidChange((uri) => {
             const projectDir = path.dirname(path.dirname(uri.fsPath));
-            console.log(`[ProjectConfigCache] launchSettings.json 变化，清除缓存: ${projectDir}`);
             this.baseUrlCache.delete(projectDir);
         });
 
         // 文件删除时，清除缓存
         this.fileWatcher.onDidDelete((uri) => {
             const projectDir = path.dirname(path.dirname(uri.fsPath));
-            console.log(`[ProjectConfigCache] launchSettings.json 删除，清除缓存: ${projectDir}`);
             this.baseUrlCache.delete(projectDir);
         });
 
@@ -106,7 +104,6 @@ export class ProjectConfigCache {
      * 清空所有缓存（手动刷新时调用）
      */
     clearAllCache(): void {
-        console.log('[ProjectConfigCache] 清空所有缓存');
         this.projectDirCache.clear();
         this.baseUrlCache.clear();
     }
@@ -115,7 +112,6 @@ export class ProjectConfigCache {
      * 仅清空 Base URL 缓存（保留项目目录缓存）
      */
     clearBaseUrlCache(): void {
-        console.log('[ProjectConfigCache] 清空 Base URL 缓存');
         this.baseUrlCache.clear();
     }
 

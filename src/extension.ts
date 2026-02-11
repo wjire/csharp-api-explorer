@@ -18,8 +18,6 @@ vscode.debug.onDidTerminateDebugSession(session => {
  * 插件激活入口
  */
 export function activate(context: vscode.ExtensionContext) {
-    console.log(lang.t('extension.activated'));
-
     // 获取工作区根目录
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) {
@@ -514,5 +512,4 @@ export function activate(context: vscode.ExtensionContext) {
  * 插件停用
  */
 export function deactivate() {
-    console.log(lang.t('extension.deactivated'));
 }

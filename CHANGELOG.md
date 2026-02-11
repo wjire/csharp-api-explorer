@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.8] - 2026-02-11
+
+### 🐛 Bug 修复 | Bug Fixes
+
+- 🔄 **修复手动编辑别名文件不生效问题**：修复手动修改 `csharp-api-explorer-aliases.json` 后刷新路由不生效的问题  
+  **Fixed manual alias file edit not taking effect**: Fixed issue where manually editing `csharp-api-explorer-aliases.json` followed by route refresh didn't apply changes
+  
+  - 问题：别名文件仅在插件激活时加载一次，手动修改文件后内存中的别名数据未更新，导致刷新路由时看不到修改  
+    Issue: Alias file was only loaded once during extension activation. Manual file edits didn't update in-memory alias data, so route refresh didn't show changes
+  
+  - 修复：在刷新路由时重新加载别名文件（`aliasManager.load()`），确保手动编辑的内容立即生效  
+    Fix: Reload alias file during route refresh (`aliasManager.load()`), ensuring manual edits take effect immediately
+  
+  - 影响：现在可以直接编辑 `.vscode/csharp-api-explorer-aliases.json` 文件，点击刷新按钮后别名立即生效，无需重启 VS Code  
+    Impact: You can now directly edit `.vscode/csharp-api-explorer-aliases.json` file and see changes immediately after clicking refresh, without restarting VS Code
+
+---
+
 ## [1.0.7] - 2026-02-10
 
 ### 🐛 Bug 修复 | Bug Fixes

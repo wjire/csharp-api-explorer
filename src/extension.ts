@@ -75,6 +75,9 @@ export function activate(context: vscode.ExtensionContext) {
 
                 const routes = await routeParser.parseWorkspace();
 
+                // 重新加载别名文件（保证手动编辑的文件生效）
+                await aliasManager.load();
+
                 // 添加别名信息
                 for (const route of routes) {
                     const alias = aliasManager.getAlias(route.route, route.httpVerb);

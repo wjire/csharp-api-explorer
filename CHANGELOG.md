@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.10] - 2026-02-11
+
+### ✨ 优化 | Improvements
+
+- 📋 **优化复制路由功能**：修改复制路由命令，直接使用显示路由而非构建完整路由  
+  **Optimized copy route functionality**: Modified copy route command to use displayed route directly instead of building full route
+  
+  - 修改前：复制路由时会构建完整的 URL（包含 BaseUrl + 路由路径）  
+    Before: Copying route would build complete URL (BaseUrl + route path)
+  
+  - 修改后：复制路由时直接使用显示的路由路径（不包含 BaseUrl）  
+    After: Copying route now uses displayed route path directly (without BaseUrl)
+  
+  - 影响：复制出的路由更简洁，便于在文档或代码中直接使用相对路径  
+    Impact: Copied routes are more concise, easier to use as relative paths in documentation or code
+
+---
+
 ## [1.0.9] - 2026-02-11
 
 ### ✨ 优化 | Improvements

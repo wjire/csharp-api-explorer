@@ -413,7 +413,12 @@ export class RouteParser {
         }
 
         // 4. 如果什么都没有，返回 /
-        return route || '/';
+        if (!route) {
+            route = '/';
+        }
+
+        // 5. 统一转为小写（ASP.NET Core 路由大小写不敏感，约定使用小写）
+        return route.toLowerCase();
     }
 
     /**

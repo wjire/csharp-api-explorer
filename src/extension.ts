@@ -131,6 +131,16 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    // 注册命令：展开所有
+    context.subscriptions.push(
+        vscode.commands.registerCommand('csharpApiExplorer.expandAll', async () => {
+            const nodes = await routeProvider.getAllExpandableNodes();
+            for (const node of nodes) {
+                await treeView.reveal(node, { select: false, focus: false, expand: true });
+            }
+        })
+    );
+
     // 注册命令：设置别名
     context.subscriptions.push(
         vscode.commands.registerCommand('csharpApiExplorer.setAlias', async (item: RouteTreeItem) => {

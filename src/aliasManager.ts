@@ -108,7 +108,7 @@ export class AliasManager {
      * 生成别名键
      */
     private makeKey(route: string, httpVerb: string): string {
-        return `${httpVerb}:${route}`;
+        return `${httpVerb.toLowerCase()}:${route.toLowerCase()}`;
     }
 
     /**

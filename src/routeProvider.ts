@@ -202,6 +202,27 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     }
 
     /**
+     * 获取父节点（用于支持reveal方法）
+     */
+    getParent(element: TreeNode): vscode.ProviderResult<TreeNode> {
+        if (element instanceof RouteTreeItem) {
+            // 路由节点的父节点是控制器分组
+            const projectPath = element.routeInfo.projectPath || 'Unknown';
+            const controllerGroups = this.getControllerGroups(projectPath);
+            return controllerGroups.find(g => g.controllerName === element.routeInfo.controller);
+        }
+
+        if (element instanceof ControllerGroupItem) {
+            // 控制器分组的父节点是项目分组
+            const projectGroups = this.getProjectGroups();
+            return projectGroups.find(g => g.projectPath === element.projectPath);
+        }
+
+        // 项目分组没有父节点
+        return null;
+    }
+
+    /**
      * 获取项目分组（带缓存）
      */
     private getProjectGroups(): ProjectGroupItem[] {
@@ -292,6 +313,25 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      */
     findTreeItem(route: RouteInfo): RouteTreeItem | undefined {
         return new RouteTreeItem(route);
+    }
+
+    /**
+     * 获取所有需要展开的节点（项目分组和控制器分组）
+     */
+    async getAllExpandableNodes(): Promise<TreeNode[]> {
+        const nodes: TreeNode[] = [];
+
+        // 获取所有项目分组
+        const projectGroups = this.getProjectGroups();
+        nodes.push(...projectGroups);
+
+        // 获取每个项目下的所有控制器分组
+        for (const projectGroup of projectGroups) {
+            const controllerGroups = this.getControllerGroups(projectGroup.projectPath);
+            nodes.push(...controllerGroups);
+        }
+
+        return nodes;
     }
 }
 

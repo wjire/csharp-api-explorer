@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.9] - 2026-02-11
+
+### ✨ 优化 | Improvements
+
+- 🔡 **路由统一使用小写**：所有解析的路由统一转为小写，符合 ASP.NET Core 约定  
+  **Standardized routes to lowercase**: All parsed routes are now converted to lowercase, following ASP.NET Core conventions
+  
+  - ASP.NET Core 路由本身是大小写不敏感的，但约定使用小写路由  
+    ASP.NET Core routing is case-insensitive, but lowercase routes are the convention
+  
+  - 在 `routeParser.buildFullRoute()` 方法的最后统一将构建好的路由转为小写  
+    Convert the built route to lowercase at the end of `routeParser.buildFullRoute()` method
+  
+  - 影响：避免项目中路由大小写混乱，存储、显示、匹配都使用统一的小写格式  
+    Impact: Prevents case inconsistency issues throughout the project. Storage, display, and matching all use uniform lowercase format
+
+---
+
 ## [1.0.8] - 2026-02-11
 
 ### 🐛 Bug 修复 | Bug Fixes

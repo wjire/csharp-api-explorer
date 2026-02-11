@@ -2,7 +2,7 @@
     "name": "csharp-api-explorer",
     "displayName": "C# API Explorer",
     "description": "A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and manage your API routes effortlessly.",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "publisher": "dankit",
     "icon": "resources/icons/icon.png",
     "repository": {
@@ -80,6 +80,11 @@
                 "icon": "$(clear-all)"
             },
             {
+                "command": "csharpApiExplorer.expandAll",
+                "title": "全部展开 (Expand All)",
+                "icon": "$(expand-all)"
+            },
+            {
                 "command": "csharpApiExplorer.setAlias",
                 "title": "设置别名 (Set Alias)"
             },
@@ -116,6 +121,11 @@
                     "command": "csharpApiExplorer.refresh",
                     "when": "view == csharpApiExplorer.routesList",
                     "group": "navigation@3"
+                },
+                {
+                    "command": "csharpApiExplorer.expandAll",
+                    "when": "view == csharpApiExplorer.routesList",
+                    "group": "navigation@4"
                 }
             ],
             "view/item/context": [

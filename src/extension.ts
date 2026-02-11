@@ -181,7 +181,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('csharpApiExplorer.copyRoute', async (item: RouteTreeItem) => {
             // 复制替换变量后的路由
-            const route = await buildFullRouteUrl(item.routeInfo.projectPath, item.displayRoute);
+            // const route = await buildFullRouteUrl(item.routeInfo.projectPath, item.displayRoute);
+            const route = item.displayRoute;
             await vscode.env.clipboard.writeText(route);
             vscode.window.showInformationMessage(lang.t('copy.success', route));
         })

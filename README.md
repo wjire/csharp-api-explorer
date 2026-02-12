@@ -3,6 +3,11 @@
 🔍 **可视化探索、搜索与管理 ASP.NET Core API 路由**  
 A powerful VS Code extension for navigating, analyzing, and managing C# Web API endpoints.
 
+[![GitHub](https://img.shields.io/badge/GitHub-wjire/csharp--api--explorer-blue?logo=github)](https://github.com/wjire/csharp-api-explorer)
+[![Gitee Mirror](https://img.shields.io/badge/Gitee-国内镜像-red?logo=gitee)](https://gitee.com/dankit/csharp-api-explorer)
+
+> 📌 **国内用户** | **For users in China**: 如果 GitHub 访问较慢，可使用 Gitee 镜像仓库：[https://gitee.com/dankit/csharp-api-explorer](https://gitee.com/dankit/csharp-api-explorer)
+
 ---
 
 ## ✨ 功能特性 | Features
@@ -53,7 +58,7 @@ A powerful VS Code extension for navigating, analyzing, and managing C# Web API 
 
 ## 📷 截图 | Screenshots
 
-![功能截图](https://gitee.com/dankit/csharp-api-explorer/raw/master/resources/image.png)
+![功能截图](https://raw.githubusercontent.com/wjire/csharp-api-explorer/master/resources/image.png)
 
 ---
 

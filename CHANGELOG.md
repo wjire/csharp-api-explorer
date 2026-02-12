@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.11] - 2026-02-12
+
+### 🐛 Bug 修复 | Bug Fixes
+
+- 🔧 **修复可空返回类型方法无法解析问题**：修复带有可空泛型返回值（如 `Task<long?>`、`Task<int?>` 等）的 Action 方法无法被识别的问题  
+  **Fixed nullable return type method parsing issue**: Fixed issue where Action methods with nullable generic return types (e.g., `Task<long?>`, `Task<int?>`) could not be recognized
+
+---
+
 ## [1.0.10] - 2026-02-11
 
 ### ✨ 优化 | Improvements

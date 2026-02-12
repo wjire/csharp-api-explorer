@@ -23,8 +23,8 @@ export class RouteParser {
     // 匹配 Route 特性（支持多特性逗号分隔）
     private readonly routeRegex = /\bRoute\s*\(\s*"([^"]+)"\s*\)(?=\s*[,\]])/g;
 
-    // 匹配方法定义
-    private readonly methodRegex = /(?:public|private|protected|internal)\s+(?:async\s+)?(?:Task<)?[\w<>]+(?:>)?\s+(\w+)\s*\(/g;
+    // 匹配方法定义（支持可空类型，如 Task<long?>）
+    private readonly methodRegex = /(?:public|private|protected|internal)\s+(?:async\s+)?(?:Task<)?[\w<>?]+(?:>)?\s+(\w+)\s*\(/g;
 
     constructor(projectConfigCache: ProjectConfigCache) {
         this.projectConfigCache = projectConfigCache;

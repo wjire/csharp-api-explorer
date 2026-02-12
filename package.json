@@ -2,17 +2,17 @@
     "name": "csharp-api-explorer",
     "displayName": "C# API Explorer",
     "description": "A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and manage your API routes effortlessly.",
-    "version": "1.0.10",
+    "version": "1.0.11",
     "publisher": "dankit",
     "icon": "resources/icons/icon.png",
     "repository": {
         "type": "git",
-        "url": "https://gitee.com/dankit/csharp-api-explorer"
+        "url": "https://github.com/wjire/csharp-api-explorer"
     },
     "bugs": {
-        "url": "https://gitee.com/dankit/csharp-api-explorer/issues"
+        "url": "https://github.com/wjire/csharp-api-explorer/issues"
     },
-    "homepage": "https://gitee.com/dankit/csharp-api-explorer#readme",
+    "homepage": "https://github.com/wjire/csharp-api-explorer#readme",
     "license": "MIT",
     "keywords": [
         "api",

@@ -350,8 +350,11 @@ export class ProjectGroupItem extends vscode.TreeItem {
             ? lang.t('treeview.unknownProject')
             : path.basename(projectPath, '.csproj');
 
-        // 搜索时自动展开，否则保持展开
-        super(projectName, vscode.TreeItemCollapsibleState.Expanded);
+        // 搜索时自动展开，否则折叠
+        const state = isSearching
+            ? vscode.TreeItemCollapsibleState.Expanded
+            : vscode.TreeItemCollapsibleState.Collapsed;
+        super(projectName, state);
 
         // 描述显示路由数量和搜索状态
         if (isSearching) {

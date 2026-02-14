@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { RouteProvider, RouteTreeItem } from './routeProvider';
+import { ProjectGroupItem, RouteProvider, RouteTreeItem } from './routeProvider';
 import { RouteParser } from './routeParser';
 import { AliasManager } from './aliasManager';
 import { ProjectConfigCache } from './projectConfigCache';
@@ -205,17 +205,33 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册命令：启动调试
     context.subscriptions.push(
-        vscode.commands.registerCommand('csharpApiExplorer.startDebugging', async (item: RouteTreeItem) => {
-            await startProjectDebugging(item.routeInfo.projectPath);
+        vscode.commands.registerCommand('csharpApiExplorer.startDebugging', async (item: RouteTreeItem | ProjectGroupItem) => {
+            await startProjectDebugging(getProjectPathFromTreeItem(item));
         })
     );
 
     // 注册命令：运行项目
     context.subscriptions.push(
-        vscode.commands.registerCommand('csharpApiExplorer.runProject', async (item: RouteTreeItem) => {
-            await runProject(item.routeInfo.projectPath);
+        vscode.commands.registerCommand('csharpApiExplorer.runProject', async (item: RouteTreeItem | ProjectGroupItem) => {
+            await runProject(getProjectPathFromTreeItem(item));
         })
     );
+
+    function getProjectPathFromTreeItem(item: RouteTreeItem | ProjectGroupItem | undefined): string | undefined {
+        if (!item) {
+            return undefined;
+        }
+
+        if (item instanceof RouteTreeItem) {
+            return item.routeInfo.projectPath;
+        }
+
+        if (item instanceof ProjectGroupItem) {
+            return item.projectPath;
+        }
+
+        return undefined;
+    }
 
     /**
      * 构建完整的路由 URL（包含基础地址）

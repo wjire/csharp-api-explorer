@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.12] - 2026-02-14
+
+### ✨ 优化 | Improvements
+
+- 🧭 **项目节点右键菜单增强**：在路由树中选中项目节点时，右键菜单新增"启动调试"和"运行项目"两项能力（此前仅路由节点支持）  
+  **Enhanced project node context menu**: Added "Start Debugging" and "Run Project" actions when right-clicking project nodes in the route tree (previously available only on route nodes)
+
+  - 现在可直接在项目层级启动调试或运行项目，无需先展开并选择具体路由  
+    You can now start debugging or run a project directly at the project level without expanding and selecting a specific route
+
+---
+
 ## [1.0.11] - 2026-02-12
 
 ### 🐛 Bug 修复 | Bug Fixes

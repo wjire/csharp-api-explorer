@@ -7,6 +7,10 @@ Write-Host "  C# API Explorer Installer" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host ""
 
+
+# Ensure script runs from project root
+Set-Location $PSScriptRoot
+
 # Check Node.js
 Write-Host "Checking Node.js..." -ForegroundColor Yellow
 try {
@@ -28,21 +32,6 @@ try {
     exit 1
 }
 
-# Check vsce
-Write-Host "Checking vsce..." -ForegroundColor Yellow
-try {
-    $vsceVersion = vsce --version 2>&1
-    Write-Host "vsce installed: $vsceVersion" -ForegroundColor Green
-} catch {
-    Write-Host "vsce not found. Installing..." -ForegroundColor Yellow
-    npm install -g @vscode/vsce
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Failed to install vsce" -ForegroundColor Red
-        exit 1
-    }
-    Write-Host "vsce installed successfully" -ForegroundColor Green
-}
-
 Write-Host ""
 Write-Host "=====================================" -ForegroundColor Cyan
 
@@ -55,6 +44,18 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "Dependencies installed" -ForegroundColor Green
 
+# Clean old build output
+Write-Host "Cleaning old build output..." -ForegroundColor Yellow
+if (Test-Path "out") {
+    try {
+        Remove-Item "out" -Recurse -Force -ErrorAction Stop
+    } catch {
+        Write-Host "Failed to clean old build output" -ForegroundColor Red
+        exit 1
+    }
+}
+Write-Host "Build output cleaned" -ForegroundColor Green
+
 # Compile
 Write-Host "Compiling..." -ForegroundColor Yellow
 npm run compile
@@ -66,7 +67,7 @@ Write-Host "Compilation successful" -ForegroundColor Green
 
 # Package
 Write-Host "Packaging extension..." -ForegroundColor Yellow
-vsce package
+npx @vscode/vsce package
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Packaging failed" -ForegroundColor Red
     exit 1

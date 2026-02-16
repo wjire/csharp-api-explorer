@@ -6,13 +6,33 @@ import { ProjectConfigCache } from './projectConfigCache';
 import { lang } from './languageManager';
 
 const activeProjects = new Set<string>();
+const debugSessionProjectDirs = new Map<string, string>();
 
-vscode.debug.onDidTerminateDebugSession(session => {
-    const cfg = session.configuration;
-    if (cfg?.cwd) {
-        activeProjects.delete(cfg.cwd);
+function getProjectDirFromDebugConfiguration(configuration: vscode.DebugConfiguration | undefined): string | undefined {
+    if (!configuration) {
+        return undefined;
     }
-});
+
+    const path = require('path');
+
+    if (typeof configuration.cwd === 'string' && configuration.cwd.trim()) {
+        return configuration.cwd;
+    }
+
+    const projectPath = (configuration as any).projectPath;
+    if (typeof projectPath === 'string' && projectPath.trim()) {
+        return path.dirname(projectPath);
+    }
+
+    if (typeof configuration.program === 'string' && configuration.program.trim()) {
+        const match = configuration.program.match(/^(.*?)[\\/]bin[\\/]/i);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+
+    return undefined;
+}
 
 /**
  * 插件激活入口
@@ -30,6 +50,34 @@ export function activate(context: vscode.ExtensionContext) {
     const aliasManager = new AliasManager(workspaceRoot);
     const routeParser = new RouteParser(projectConfigCache);
     const routeProvider = new RouteProvider(aliasManager);
+
+    context.subscriptions.push(
+        vscode.debug.onDidStartDebugSession((session) => {
+            const projectDir = getProjectDirFromDebugConfiguration(session.configuration);
+            if (!projectDir) {
+                return;
+            }
+
+            activeProjects.add(projectDir);
+            debugSessionProjectDirs.set(session.id, projectDir);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.debug.onDidTerminateDebugSession((session) => {
+            const trackedProjectDir = debugSessionProjectDirs.get(session.id);
+            if (trackedProjectDir) {
+                activeProjects.delete(trackedProjectDir);
+                debugSessionProjectDirs.delete(session.id);
+                return;
+            }
+
+            const projectDir = getProjectDirFromDebugConfiguration(session.configuration);
+            if (projectDir) {
+                activeProjects.delete(projectDir);
+            }
+        })
+    );
 
     // 创建TreeView
     const treeView = vscode.window.createTreeView('csharpApiExplorer.routesList', {
@@ -271,15 +319,11 @@ export function activate(context: vscode.ExtensionContext) {
         const projectDir = path.dirname(projectPath);
         const projectName = path.basename(projectPath, '.csproj');
 
-        // 自动检测 target framework
-        const tfm = await detectTargetFramework(projectPath);
-
         // 创建输出窗口
         const output = vscode.window.createOutputChannel(lang.t('build.outputTitle', projectName));
         output.show(true);
         output.appendLine(lang.t('build.starting', projectName));
         output.appendLine(lang.t('build.projectPath', projectDir));
-        output.appendLine(lang.t('build.targetFramework', tfm));
         output.appendLine(lang.t('build.separator'));
 
         // 执行 dotnet build
@@ -315,42 +359,45 @@ export function activate(context: vscode.ExtensionContext) {
             envFromLaunchSettings = profileData.profile.environmentVariables ?? {};
         }
 
-        // 构造动态调试配置
-        const debugConfig: any = {
-            name: lang.t('debug.configName', projectName),
-            type: "coreclr",
+        const debugName = lang.t('debug.configName', projectName);
+        const env = {
+            ASPNETCORE_ENVIRONMENT: "Development",
+            ...envFromLaunchSettings
+        };
+
+        if (!isDebuggerTypeAvailable("dotnet")) {
+            vscode.window.showErrorMessage(lang.t('error.devKitRequired'));
+            return;
+        }
+
+        const dotnetDebugConfig: vscode.DebugConfiguration = {
+            name: debugName,
+            type: "dotnet",
             request: "launch",
-            program: `${projectDir}/bin/Debug/${tfm}/${projectName}.dll`,
+            projectPath,
             cwd: projectDir,
-            env: {
-                ASPNETCORE_ENVIRONMENT: "Development", // 默认值
-                ...envFromLaunchSettings               // launchSettings.json 覆盖
-            },
-            console: "integratedTerminal",
-            stopAtEntry: false
+            env
         };
 
         // 指定使用的 launchSettings.json profile，确保调试器使用相同的配置
         if (profileName) {
-            debugConfig.launchSettingsProfile = profileName;
+            dotnetDebugConfig.launchSettingsProfile = profileName;
         }
 
         // 获取 workspaceFolder（可能为 undefined）
         const workspaceFolder =
             vscode.workspace.getWorkspaceFolder(vscode.Uri.file(projectPath)) ?? undefined;
 
-        // 启动调试
-        const started = await vscode.debug.startDebugging(workspaceFolder, debugConfig);
+        // 启动调试：仅支持 dotnet（C# Dev Kit）
+        const started = await vscode.debug.startDebugging(workspaceFolder, dotnetDebugConfig);
 
         if (!started) {
             vscode.window.showErrorMessage(lang.t('error.debugStartFailed'));
-        } else {
-            activeProjects.add(projectDir); // 记录该项目正在调试
         }
     }
 
     /**
-     * 使用 VS Code Terminal API 启动 dotnet run（带环境变量）
+     * 运行项目（仅支持 C# Dev Kit 的 dotnet 调试器 noDebug 模式）
      */
     async function runProject(projectPath: string | undefined) {
         if (!projectPath) {
@@ -358,58 +405,47 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
+        if (isProjectRunning(projectPath)) {
+            return;
+        }
+
         const path = require("path");
         const projectDir = path.dirname(projectPath);
         const projectName = path.basename(projectPath, ".csproj");
 
-        // 读取 launchSettings.json 的环境变量
+        // 先尝试 C# Dev Kit（dotnet 调试器）无调试运行，失败再回退到 terminal + dotnet run
+        const workspaceFolder =
+            vscode.workspace.getWorkspaceFolder(vscode.Uri.file(projectPath)) ?? undefined;
+
         const profileData = getProjectProfile(projectPath);
         const envFromLaunchSettings = profileData?.profile?.environmentVariables ?? {};
 
-        // 创建带环境变量的终端（每次都创建新的）
-        const terminal = vscode.window.createTerminal({
+        if (!isDebuggerTypeAvailable("dotnet")) {
+            vscode.window.showErrorMessage(lang.t('error.devKitRequired'));
+            return;
+        }
+
+        const dotnetRunConfig: vscode.DebugConfiguration = {
             name: lang.t('run.terminalName', projectName),
+            type: "dotnet",
+            request: "launch",
+            noDebug: true,
+            projectPath,
             cwd: projectDir,
             env: {
                 ASPNETCORE_ENVIRONMENT: "Development",
                 ...envFromLaunchSettings
             }
-        });
+        };
 
-        terminal.show();
-        terminal.sendText(`dotnet run --project "${projectPath}"`);
-    }
-
-    /**
-     * 检测项目的目标框架版本
-     */
-    async function detectTargetFramework(projectPath: string): Promise<string> {
-        try {
-            // 读取 .csproj 文件
-            const csprojContent = await vscode.workspace.fs.readFile(vscode.Uri.file(projectPath));
-            const content = csprojContent.toString();
-
-            // 匹配 <TargetFramework>net6.0</TargetFramework> 或 <TargetFramework>net10.0</TargetFramework>
-            const match = content.match(/<TargetFramework>([^<]+)<\/TargetFramework>/i);
-            if (match && match[1]) {
-                return match[1];
-            }
-
-            // 如果没找到，尝试匹配 <TargetFrameworks>（多目标）
-            const multiMatch = content.match(/<TargetFrameworks>([^<]+)<\/TargetFrameworks>/i);
-            if (multiMatch && multiMatch[1]) {
-                // 取第一个目标框架
-                const frameworks = multiMatch[1].split(';');
-                if (frameworks.length > 0) {
-                    return frameworks[0].trim();
-                }
-            }
-        } catch (error) {
-            console.error(lang.t('log.detectFrameworkFailed'), error);
+        if (profileData?.profileName) {
+            dotnetRunConfig.launchSettingsProfile = profileData.profileName;
         }
 
-        // 默认返回 net8.0（最新的 LTS 版本）
-        return 'net8.0';
+        const started = await vscode.debug.startDebugging(workspaceFolder, dotnetRunConfig);
+        if (!started) {
+            vscode.window.showErrorMessage(lang.t('error.debugStartFailed'));
+        }
     }
 
     /**
@@ -420,6 +456,20 @@ export function activate(context: vscode.ExtensionContext) {
         const projectDir = path.dirname(projectPath);
 
         return activeProjects.has(projectDir);
+    }
+
+    /**
+     * 判断当前环境是否注册了指定调试器类型
+     */
+    function isDebuggerTypeAvailable(debuggerType: string): boolean {
+        return vscode.extensions.all.some((extension) => {
+            const debuggers = extension.packageJSON?.contributes?.debuggers;
+            if (!Array.isArray(debuggers)) {
+                return false;
+            }
+
+            return debuggers.some((debuggerContribution: any) => debuggerContribution?.type === debuggerType);
+        });
     }
 
     /**

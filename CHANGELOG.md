@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.13] - 2026-02-16
+
+### ⚠️ 行为调整 | Behavior Changes
+
+- 🔒 **启动调试 / 运行项目改为仅支持 C# Dev Kit**：`Start Debugging` 与 `Run Project` 统一使用 C# Dev Kit 的 `dotnet` 调试器，不再回退 `coreclr` 或 `dotnet run` 终端方案  
+  **Debug/Run now C# Dev Kit only**: `Start Debugging` and `Run Project` now both use the C# Dev Kit `dotnet` debugger, with no fallback to `coreclr` or terminal `dotnet run`
+
+- 🧹 **简化启动逻辑**：移除回退分支与相关兼容代码，降低维护复杂度，行为更一致  
+  **Simplified startup logic**: Removed fallback branches and related compatibility code for lower maintenance complexity and more consistent behavior
+
+- 📝 **文档更新**：README 增加 C# Dev Kit 依赖说明  
+  **Documentation update**: README now explicitly states the C# Dev Kit requirement
+
+---
+
 ## [1.0.12] - 2026-02-14
 
 ### ✨ 优化 | Improvements
@@ -95,22 +110,6 @@ All notable changes to this project will be documented in this file.
   
   - 影响：确保 "启动项目" 和 "调试项目" 使用相同的配置，避免配置混乱  
     Impact: Ensures "Run Project" and "Debug Project" use the same configuration, avoiding configuration confusion
-
-### 📝 文档更新 | Documentation
-
-- 📖 更新 README，新增"功能说明"章节，详细说明 LaunchSettings.json 配置读取逻辑  
-  Updated README with new "How It Works" section explaining LaunchSettings.json configuration reading logic
-  
-  - 说明扩展读取第一个 `commandName = "Project"` 的 profile  
-    Explains how the extension reads the first profile with `commandName = "Project"`
-  
-  - 详细描述 `applicationUrl` 和 `environmentVariables` 的提取逻辑  
-    Details the extraction logic for `applicationUrl` and `environmentVariables`
-  
-  - 展示配置示例和调试时的 profile 指定机制  
-    Shows configuration examples and the profile specification mechanism during debugging
-
----
 
 ## [1.0.6] - 2026-02-10
 
@@ -305,11 +304,8 @@ All notable changes to this project will be documented in this file.
 - 📂 **项目与控制器分组**：按项目和控制器组织路由结构  
   **Project & controller grouping**: Organize routes by project and controller
 
-- ⚙️ **变量配置支持**：在 `.vscode/csharp-api-explorer-variables.json` 中定义 baseUrl、version 等变量  
-  **Variable configuration**: Define base URLs and placeholders in `.vscode/csharp-api-explorer-variables.json`
-
-- 🛠️ **运行与调试支持**：一键运行或调试项目，自动读取 launchSettings.json 中的环境变量  
-  **Run & Debug support**: One-click launch or debug with environment variables from `launchSettings.json`
+- 🛠️ **运行与调试支持**：一键运行或调试项目
+  **Run & Debug support**: One-click launch or debug
 
 ---
 

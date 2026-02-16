@@ -23,6 +23,7 @@ const TEXT_MAP = {
         'error.cannotOpenFile': '无法打开文件',
         'error.buildFailed': '构建失败，无法启动调试',
         'error.debugStartFailed': '启动调试失败',
+        'error.devKitRequired': '此功能仅支持 C# Dev Kit，请先安装并启用 C# Dev Kit 扩展',
 
         // 路由相关
         'route.parsing': '正在解析路由...',
@@ -79,6 +80,7 @@ const TEXT_MAP = {
         'error.cannotOpenFile': 'Cannot open file',
         'error.buildFailed': 'Build failed, cannot start debugging',
         'error.debugStartFailed': 'Failed to start debugging',
+        'error.devKitRequired': 'This feature requires C# Dev Kit. Please install and enable the extension first',
 
         // Route
         'route.parsing': 'Parsing routes...',

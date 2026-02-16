@@ -35,8 +35,11 @@ A powerful VS Code extension for navigating, analyzing, and managing C# Web API 
 - 📂 **项目分组**：按项目和控制器分组展示路由结构  
   **Project grouping**: Organize routes by project and controller
 
-- 🚀 **项目启动**：支持以 dotnet run 或调试模式启动项目，自动注入 launchSettings.json 环境变量  
-  **Project launch**: Start or debug projects with automatic environment variable injection from launchSettings.json
+- 🚀 **项目启动（仅 C# Dev Kit）**：通过 C# Dev Kit 的 `dotnet` 调试器启动调试或无调试运行，自动注入 launchSettings.json 环境变量  
+  **Project launch (C# Dev Kit only)**: Start debugging or run without debugging via C# Dev Kit `dotnet` debugger, with automatic environment variable injection from launchSettings.json
+
+- 📦 **依赖说明**：使用“启动调试 / 运行项目”前，请先安装并启用 C# Dev Kit 扩展  
+  **Requirement**: Install and enable C# Dev Kit before using “Start Debugging / Run Project”
 
 - 🔧 **API 版本自动解析**：自动识别 `[ApiVersion]` 特性，替换路由中带 `:apiVersion` 约束的占位符（变量名任意，如 `{version:apiVersion}`, `{v:apiVersion}`）  
   **API version auto-parsing**: Automatically recognizes `[ApiVersion]` attributes and replaces placeholders with `:apiVersion` constraint (variable name can be anything, e.g., `{version:apiVersion}`, `{v:apiVersion}`)
@@ -171,63 +174,3 @@ If a controller has no `[ApiVersion]` attribute, the extension uses default vers
 >This is the official ASP.NET Core API versioning approach (requires `Microsoft.AspNetCore.Mvc.Versioning` package). The extension automatically supports it without additional configuration.
 
 ---
-
-### LaunchSettings.json 配置读取 | LaunchSettings.json Configuration
-
-扩展会自动读取项目的 `Properties/launchSettings.json` 配置，用于：  
-The extension automatically reads the project's `Properties/launchSettings.json` configuration for:
-
-- 🌐 **Base URL 解析**：用于路由的完整 URL 展示  
-  **Base URL resolution**: For displaying complete route URLs
-
-- 🚀 **项目启动/调试**：自动注入环境变量，确保配置一致  
-  **Project launch/debug**: Automatic environment variable injection for configuration consistency
-
-**读取逻辑 | Reading Logic:**
-
-1. 查找第一个 `commandName = "Project"` 的 profile  
-   Find the first profile with `commandName = "Project"`
-
-2. 从该 profile 提取：  
-   Extract from that profile:
-   - `applicationUrl`（监听地址，优先选择 `http://`，其次 `https://`）  
-     `applicationUrl` (listening address, prefer `http://`, then `https://`)
-   - `environmentVariables`（环境变量，如 `ASPNETCORE_ENVIRONMENT`）  
-     `environmentVariables` (env vars, e.g., `ASPNETCORE_ENVIRONMENT`)
-
-3. 启动调试时，通过 `launchSettingsProfile` 指定使用的 profile 名称，确保监听端口和环境变量来自同一配置  
-   During debugging, use `launchSettingsProfile` to specify the profile name, ensuring ports and env vars come from the same configuration
-
-**配置示例 | Example Configuration:**
-
-```json
-{
-  "profiles": {
-    "http": {
-      "commandName": "Project",
-      "applicationUrl": "http://localhost:5131",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "https": {
-      "commandName": "Project",
-      "applicationUrl": "https://localhost:7047;http://localhost:5120",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
-      }
-    }
-  }
-}
-```
-
-在上述示例中，扩展会使用 **`http` profile**（第一个 `commandName = "Project"` 的配置）：
-- Base URL: `http://localhost:5131`
-- 环境变量: `ASPNETCORE_ENVIRONMENT = "Development"`
-
-In the example above, the extension uses the **`http` profile** (first `commandName = "Project"` configuration):
-- Base URL: `http://localhost:5131`
-- Environment variables: `ASPNETCORE_ENVIRONMENT = "Development"`
-
-> 💡 **提示** | **Tip**: 启动项目和调试项目都会使用相同的 profile 配置，确保行为一致。  
-> Both "Run Project" and "Debug Project" use the same profile configuration for consistent behavior.

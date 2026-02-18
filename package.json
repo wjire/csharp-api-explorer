@@ -1,8 +1,8 @@
 {
     "name": "csharp-api-explorer",
-    "displayName": "C# API Explorer",
-    "description": "A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and manage your API routes effortlessly.",
-    "version": "1.0.13",
+    "displayName": "%extension.displayName%",
+    "description": "%extension.description%",
+    "version": "1.0.14",
     "publisher": "dankit",
     "icon": "resources/icons/icon.png",
     "repository": {
@@ -42,16 +42,16 @@
         "Programming Languages",
         "Other"
     ],
-    "main": "./out/extension.js",
-    "extensionDependencies": [
-        "ms-dotnettools.csdevkit"
+    "activationEvents": [
+        "onStartupFinished"
     ],
+    "main": "./out/extension.js",
     "contributes": {
         "viewsContainers": {
             "activitybar": [
                 {
                     "id": "csharpApiExplorer",
-                    "title": "API Explorer",
+                    "title": "%viewContainer.apiExplorer.title%",
                     "icon": "resources/icons/activity-bar.svg"
                 }
             ]
@@ -69,43 +69,43 @@
         "commands": [
             {
                 "command": "csharpApiExplorer.refresh",
-                "title": "刷新路由 (Refresh Routes)",
+                "title": "%command.refresh.title%",
                 "icon": "$(refresh)"
             },
             {
                 "command": "csharpApiExplorer.search",
-                "title": "搜索路由 (Search Routes)",
+                "title": "%command.search.title%",
                 "icon": "$(search)"
             },
             {
                 "command": "csharpApiExplorer.clearSearch",
-                "title": "清除搜索 (Clear Search)",
+                "title": "%command.clearSearch.title%",
                 "icon": "$(clear-all)"
             },
             {
                 "command": "csharpApiExplorer.expandAll",
-                "title": "全部展开 (Expand All)",
+                "title": "%command.expandAll.title%",
                 "icon": "$(expand-all)"
             },
             {
                 "command": "csharpApiExplorer.setAlias",
-                "title": "设置别名 (Set Alias)"
+                "title": "%command.setAlias.title%"
             },
             {
                 "command": "csharpApiExplorer.clearAlias",
-                "title": "清除别名 (Clear Alias)"
+                "title": "%command.clearAlias.title%"
             },
             {
                 "command": "csharpApiExplorer.copyRoute",
-                "title": "复制路由 (Copy Route)"
+                "title": "%command.copyRoute.title%"
             },
             {
                 "command": "csharpApiExplorer.startDebugging",
-                "title": "启动调试 (Start Debugging)"
+                "title": "%command.startDebugging.title%"
             },
             {
                 "command": "csharpApiExplorer.runProject",
-                "title": "运行项目 (Run Project)"
+                "title": "%command.runProject.title%"
             }
         ],
         "menus": {
@@ -160,7 +160,7 @@
             ]
         },
         "configuration": {
-            "title": "C# API Explorer",
+            "title": "%config.title%",
             "properties": {
                 "csharpApiExplorer.excludePatterns": {
                     "type": "array",
@@ -178,22 +178,22 @@
                         "**/build/**",
                         "**/wwwroot/lib/**"
                     ],
-                    "description": "排除的文件模式(Files to exclude)"
+                    "description": "%config.excludePatterns.description%"
                 },
                 "csharpApiExplorer.sortAliasFirst": {
                     "type": "boolean",
                     "default": false,
-                    "description": "有别名的路由是否置顶 (Whether routes with aliases should be placed at the top)"
+                    "description": "%config.sortAliasFirst.description%"
                 },
                 "csharpApiExplorer.sortByRoutePath": {
                     "type": "boolean",
                     "default": false,
-                    "description": "是否按路由路径字母顺序排序，否则按文件中的顺序 (Whether to sort routes by path alphabetically, otherwise by file order)"
+                    "description": "%config.sortByRoutePath.description%"
                 },
                 "csharpApiExplorer.defaultApiVersion": {
                     "type": "string",
                     "default": "1.0",
-                    "description": "当控制器没有 [ApiVersion] 特性时使用的默认版本号（默认 '1.0'，与 ASP.NET Core 官方默认值一致） (Default API version when controller has no [ApiVersion] attribute (default: '1.0', same as ASP.NET Core official default))"
+                    "description": "%config.defaultApiVersion.description%"
                 }
             }
         }

@@ -346,6 +346,8 @@ export class ProjectGroupItem extends vscode.TreeItem {
         searchText: string = ''
     ) {
         const path = require('path');
+        const lightIconPath = path.join(__dirname, '..', 'resources', 'icons', 'WebApplication.16.16.svg');
+        const darkIconPath = path.join(__dirname, '..', 'resources', 'icons', 'WebApplication.dark.16.16.svg');
         const projectName = projectPath === 'Unknown'
             ? lang.t('treeview.unknownProject')
             : path.basename(projectPath, '.csproj');
@@ -363,8 +365,11 @@ export class ProjectGroupItem extends vscode.TreeItem {
             this.description = lang.t('treeview.routesCount', routeCount);
         }
 
-        // 使用文件夹图标
-        this.iconPath = new vscode.ThemeIcon('folder');
+        // 使用主题感知图标（浅色/深色）
+        this.iconPath = {
+            light: vscode.Uri.file(lightIconPath),
+            dark: vscode.Uri.file(darkIconPath)
+        };
 
         // 设置上下文值（可用于右键菜单）
         this.contextValue = 'projectGroup';
@@ -385,6 +390,10 @@ export class ControllerGroupItem extends vscode.TreeItem {
         isSearching: boolean = false,
         searchText: string = ''
     ) {
+        const path = require('path');
+        const lightIconPath = path.join(__dirname, '..', 'resources', 'icons', 'Controllers.16.16.svg');
+        const darkIconPath = path.join(__dirname, '..', 'resources', 'icons', 'Controllers.dark.16.16.svg');
+
         // 去掉 Controller 后缀，显示更简洁
         const displayName = controllerName.replace(/Controller$/, '');
 
@@ -397,8 +406,11 @@ export class ControllerGroupItem extends vscode.TreeItem {
         // 描述显示路由数量（搜索时不重复显示搜索关键词）
         this.description = `${routeCount}`;
 
-        // 使用文件图标
-        this.iconPath = new vscode.ThemeIcon('symbol-class');
+        // 使用主题感知图标（浅色/深色）
+        this.iconPath = {
+            light: vscode.Uri.file(lightIconPath),
+            dark: vscode.Uri.file(darkIconPath)
+        };
 
         // 设置上下文值（可用于右键菜单）
         this.contextValue = 'controllerGroup';

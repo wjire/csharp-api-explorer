@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.14] - 2026-02-18
+
+### ✨ 优化 | Improvements
+
+- 🎨 **View 图标主题适配**：项目层与控制器层图标支持浅色/深色主题自动切换。  
+  **Theme-aware view icons**: Project and controller level icons now switch automatically for light/dark themes.
+
+- 💬 **提示体验优化**：路由解析与常用操作提示改为在 View 内显示，减少右下角通知打扰；临时提示支持自动恢复。  
+  **Message UX improvements**: Route parsing and common operation feedback now display in-view instead of toasts, with temporary message auto-restore.
+
+- 🚫 **非 .NET 工作区行为优化**：未检测到 `.csproj` 时跳过路由扫描。  
+  **Non-.NET workspace behavior**: Skip route scanning when no `.csproj` is detected.
+
+---
+
 ## [1.0.13] - 2026-02-16
 
 ### ⚠️ 行为调整 | Behavior Changes

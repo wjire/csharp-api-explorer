@@ -85,12 +85,63 @@ export function activate(context: vscode.ExtensionContext) {
         showCollapseAll: true  // 启用折叠所有按钮
     });
 
+    let persistentViewMessage: string | undefined;
+    let temporaryMessageTimer: NodeJS.Timeout | undefined;
+
     // 初始化加载
     initialize();
+
+    function setViewMessage(message: string | undefined): void {
+        if (temporaryMessageTimer) {
+            clearTimeout(temporaryMessageTimer);
+            temporaryMessageTimer = undefined;
+        }
+
+        persistentViewMessage = message;
+        treeView.message = message;
+    }
+
+    function setTemporaryViewMessage(message: string, durationMs: number = 2500): void {
+        if (temporaryMessageTimer) {
+            clearTimeout(temporaryMessageTimer);
+        }
+
+        treeView.message = message;
+        temporaryMessageTimer = setTimeout(() => {
+            temporaryMessageTimer = undefined;
+            treeView.message = persistentViewMessage;
+        }, durationMs);
+    }
 
     async function initialize() {
         await aliasManager.load();
         await refreshRoutes();
+    }
+
+    async function hasDotnetProject(): Promise<boolean> {
+        const config = vscode.workspace.getConfiguration('csharpApiExplorer');
+        const excludePatterns = config.get<string[]>('excludePatterns', [
+            "**/bin/**",
+            "**/obj/**",
+            "**/node_modules/**",
+            "**/.vs/**",
+            "**/.git/**",
+            "**/.github/**",
+            "**/.idea/**",
+            "**/.vscode/**",
+            "**/dist/**",
+            "**/out/**",
+            "**/build/**",
+            "**/wwwroot/lib/**"
+        ]);
+
+        const projectFiles = await vscode.workspace.findFiles(
+            '**/*.csproj',
+            `{${excludePatterns.join(',')}}`,
+            1
+        );
+
+        return projectFiles.length > 0;
     }
 
     /**
@@ -98,20 +149,27 @@ export function activate(context: vscode.ExtensionContext) {
      * @param silent 静默模式，不显示通知（用于自动刷新）
      */
     async function refreshRoutes(silent: boolean = false) {
-        try {
-            if (!silent) {
-                // 手动刷新时显示进度通知
-                vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Notification,
-                    title: lang.t('route.parsing'),
-                    cancellable: false
-                }, async () => {
-                    await doRefresh();
-                });
-            } else {
-                // 自动刷新时静默执行
-                await doRefresh();
+        const formatErrorMessage = (error: unknown): string => {
+            if (error instanceof Error) {
+                return error.message;
             }
+
+            return String(error);
+        };
+
+        try {
+            const dotnetProjectExists = await hasDotnetProject();
+            if (!dotnetProjectExists) {
+                routeProvider.setRoutes([]);
+                setViewMessage(lang.t('route.skipNotDotnet'));
+                return;
+            }
+
+            if (!silent) {
+                setViewMessage(lang.t('route.parsing'));
+            }
+
+            await doRefresh();
 
             async function doRefresh() {
                 // 手动刷新时清空缓存
@@ -133,17 +191,11 @@ export function activate(context: vscode.ExtensionContext) {
                 }
 
                 routeProvider.setRoutes(routes);
-
-                if (!silent) {
-                    vscode.window.showInformationMessage(lang.t('route.found', routes.length));
-                }
+                setViewMessage(lang.t('route.found', routes.length));
             }
         } catch (error) {
-            if (!silent) {
-                vscode.window.showErrorMessage(lang.t('route.parseFailed', error));
-            } else {
-                console.error(lang.t('route.autoRefreshFailed'), error);
-            }
+            setViewMessage(lang.t('route.parseFailed', formatErrorMessage(error)));
+            console.error(lang.t('route.autoRefreshFailed'), error);
         }
     }
 
@@ -232,7 +284,7 @@ export function activate(context: vscode.ExtensionContext) {
             // const route = await buildFullRouteUrl(item.routeInfo.projectPath, item.displayRoute);
             const route = item.displayRoute;
             await vscode.env.clipboard.writeText(route);
-            vscode.window.showInformationMessage(lang.t('copy.success', route));
+            setTemporaryViewMessage(lang.t('copy.success', route));
         })
     );
 
@@ -246,7 +298,7 @@ export function activate(context: vscode.ExtensionContext) {
                     selection: new vscode.Range(position, position)
                 });
             } catch (error) {
-                vscode.window.showErrorMessage(lang.t('error.cannotOpenFile') + `: ${error}`);
+                setViewMessage(lang.t('error.cannotOpenFile') + `: ${error}`);
             }
         })
     );
@@ -305,7 +357,7 @@ export function activate(context: vscode.ExtensionContext) {
      */
     async function startProjectDebugging(projectPath: string | undefined) {
         if (!projectPath) {
-            vscode.window.showErrorMessage(lang.t('error.noProjectFile'));
+            setViewMessage(lang.t('error.noProjectFile'));
             return;
         }
 
@@ -345,7 +397,7 @@ export function activate(context: vscode.ExtensionContext) {
         });
 
         if (!buildResult) {
-            vscode.window.showErrorMessage(lang.t('error.buildFailed'));
+            setViewMessage(lang.t('error.buildFailed'));
             return;
         }
 
@@ -366,7 +418,7 @@ export function activate(context: vscode.ExtensionContext) {
         };
 
         if (!isDebuggerTypeAvailable("dotnet")) {
-            vscode.window.showErrorMessage(lang.t('error.devKitRequired'));
+            setViewMessage(lang.t('error.devKitRequired'));
             return;
         }
 
@@ -392,7 +444,7 @@ export function activate(context: vscode.ExtensionContext) {
         const started = await vscode.debug.startDebugging(workspaceFolder, dotnetDebugConfig);
 
         if (!started) {
-            vscode.window.showErrorMessage(lang.t('error.debugStartFailed'));
+            setViewMessage(lang.t('error.debugStartFailed'));
         }
     }
 
@@ -401,7 +453,7 @@ export function activate(context: vscode.ExtensionContext) {
      */
     async function runProject(projectPath: string | undefined) {
         if (!projectPath) {
-            vscode.window.showErrorMessage(lang.t('error.noProjectFile'));
+            setViewMessage(lang.t('error.noProjectFile'));
             return;
         }
 
@@ -421,7 +473,7 @@ export function activate(context: vscode.ExtensionContext) {
         const envFromLaunchSettings = profileData?.profile?.environmentVariables ?? {};
 
         if (!isDebuggerTypeAvailable("dotnet")) {
-            vscode.window.showErrorMessage(lang.t('error.devKitRequired'));
+            setViewMessage(lang.t('error.devKitRequired'));
             return;
         }
 
@@ -444,7 +496,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         const started = await vscode.debug.startDebugging(workspaceFolder, dotnetRunConfig);
         if (!started) {
-            vscode.window.showErrorMessage(lang.t('error.debugStartFailed'));
+            setViewMessage(lang.t('error.debugStartFailed'));
         }
     }
 

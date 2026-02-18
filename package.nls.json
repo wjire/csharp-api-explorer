@@ -1,0 +1,19 @@
+{
+    "extension.displayName": "C# API Explorer",
+    "extension.description": "🌐 A powerful visual explorer for C# ASP.NET Core APIs — parse, search, navigate, analyze and manage your API routes effortlessly.",
+    "viewContainer.apiExplorer.title": "C# API Explorer",
+    "command.refresh.title": "Refresh Routes",
+    "command.search.title": "Search Routes",
+    "command.clearSearch.title": "Clear Search",
+    "command.expandAll.title": "Expand All",
+    "command.setAlias.title": "Set Alias",
+    "command.clearAlias.title": "Clear Alias",
+    "command.copyRoute.title": "Copy Route",
+    "command.startDebugging.title": "Start Debugging",
+    "command.runProject.title": "Run Project",
+    "config.title": "C# API Explorer",
+    "config.excludePatterns.description": "Files to exclude.",
+    "config.sortAliasFirst.description": "Whether routes with aliases should be placed at the top.",
+    "config.sortByRoutePath.description": "Whether to sort routes by path alphabetically; otherwise, keep file order.",
+    "config.defaultApiVersion.description": "Default API version when the controller has no [ApiVersion] attribute (default: '1.0', same as ASP.NET Core official default)."
+}

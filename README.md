@@ -3,10 +3,9 @@
 🔍 **可视化探索、搜索与管理 ASP.NET Core API 路由**  
 A powerful VS Code extension for navigating, analyzing, and managing C# Web API endpoints.
 
-[![GitHub](https://img.shields.io/badge/GitHub-wjire/csharp--api--explorer-blue?logo=github)](https://github.com/wjire/csharp-api-explorer)
-[![Gitee Mirror](https://img.shields.io/badge/Gitee-国内镜像-red?logo=gitee)](https://gitee.com/dankit/csharp-api-explorer)
-
-> 📌 **国内用户** | **For users in China**: 如果 GitHub 访问较慢，可使用 Gitee 镜像仓库：[https://gitee.com/dankit/csharp-api-explorer](https://gitee.com/dankit/csharp-api-explorer)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/dankit.csharp-api-console)](https://marketplace.visualstudio.com/items?itemName=dankit.csharp-api-console)
+[![Downloads](https://img.shields.io/visual-studio-marketplace/d/dankit.csharp-api-console)](https://marketplace.visualstudio.com/items?itemName=dankit.csharp-api-console)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/dankit.csharp-api-console)](https://marketplace.visualstudio.com/items?itemName=dankit.csharp-api-console)
 
 ---
 
@@ -174,3 +173,21 @@ If a controller has no `[ApiVersion]` attribute, the extension uses default vers
 >This is the official ASP.NET Core API versioning approach (requires `Microsoft.AspNetCore.Mvc.Versioning` package). The extension automatically supports it without additional configuration.
 
 ---
+
+## 📦 仓库地址 | Repository
+
+- **GitHub**: https://github.com/wjire/csharp-api-console
+- **Gitee**: https://gitee.com/dankit/csharp-api-console
+
+---
+
+## 📝 许可证 | License
+
+[MIT License](LICENSE)
+
+---
+
+## 🎉 享受编码！ | Happy Coding!
+
+如果这个扩展对你有帮助，请给我们一个 ⭐ Star！  
+If you find this extension helpful, please give us a ⭐ Star!

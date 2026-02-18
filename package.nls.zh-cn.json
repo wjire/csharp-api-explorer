@@ -1,0 +1,19 @@
+{
+    "extension.displayName": "C# API Explorer",
+    "extension.description": "🌐 一个强大的 C# ASP.NET Core API 可视化浏览器，轻松解析、搜索、导航、分析并管理你的 API 路由。",
+    "viewContainer.apiExplorer.title": "C# API Explorer",
+    "command.refresh.title": "刷新路由",
+    "command.search.title": "搜索路由",
+    "command.clearSearch.title": "清除搜索",
+    "command.expandAll.title": "全部展开",
+    "command.setAlias.title": "设置别名",
+    "command.clearAlias.title": "清除别名",
+    "command.copyRoute.title": "复制路由",
+    "command.startDebugging.title": "启动调试",
+    "command.runProject.title": "运行项目",
+    "config.title": "C# API Explorer",
+    "config.excludePatterns.description": "需要排除的文件模式。",
+    "config.sortAliasFirst.description": "是否将有别名的路由置顶显示。",
+    "config.sortByRoutePath.description": "是否按路由路径字母顺序排序；否则按文件定义顺序。",
+    "config.defaultApiVersion.description": "当控制器没有 [ApiVersion] 特性时使用的默认 API 版本（默认：'1.0'，与 ASP.NET Core 官方默认值一致）。"
+}

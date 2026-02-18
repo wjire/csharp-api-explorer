@@ -30,6 +30,7 @@ const TEXT_MAP = {
         'route.found': '找到 {0} 个路由',
         'route.parseFailed': '解析路由失败: {0}',
         'route.autoRefreshFailed': '自动刷新路由失败:',
+        'route.skipNotDotnet': '当前工作区不是 .NET 项目（未检测到 .csproj），已跳过路由扫描',
 
         // 搜索
         'search.prompt': '搜索路由',
@@ -87,6 +88,7 @@ const TEXT_MAP = {
         'route.found': 'Found {0} routes',
         'route.parseFailed': 'Failed to parse routes: {0}',
         'route.autoRefreshFailed': 'Auto refresh routes failed:',
+        'route.skipNotDotnet': 'Current workspace is not a .NET project (no .csproj detected), route scanning skipped',
 
         // Search
         'search.prompt': 'Search Routes',

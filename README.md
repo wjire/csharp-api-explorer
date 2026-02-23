@@ -3,9 +3,9 @@
 🔍 **可视化探索、搜索与管理 ASP.NET Core API 路由**  
 A powerful VS Code extension for navigating, analyzing, and managing C# Web API endpoints.
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/dankit.csharp-api-console)](https://marketplace.visualstudio.com/items?itemName=dankit.csharp-api-console)
-[![Downloads](https://img.shields.io/visual-studio-marketplace/d/dankit.csharp-api-console)](https://marketplace.visualstudio.com/items?itemName=dankit.csharp-api-console)
-[![Rating](https://img.shields.io/visual-studio-marketplace/r/dankit.csharp-api-console)](https://marketplace.visualstudio.com/items?itemName=dankit.csharp-api-console)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/dankit.csharp-api-explorer)](https://marketplace.visualstudio.com/items?itemName=dankit.csharp-api-explorer)
+[![Downloads](https://img.shields.io/visual-studio-marketplace/d/dankit.csharp-api-explorer)](https://marketplace.visualstudio.com/items?itemName=dankit.csharp-api-explorer)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/dankit.csharp-api-explorer)](https://marketplace.visualstudio.com/items?itemName=dankit.csharp-api-explorer)
 
 ---
 

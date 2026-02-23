@@ -2,7 +2,7 @@
     "name": "csharp-api-explorer",
     "displayName": "%extension.displayName%",
     "description": "%extension.description%",
-    "version": "1.0.14",
+    "version": "1.0.15",
     "publisher": "dankit",
     "icon": "resources/icons/icon.png",
     "repository": {

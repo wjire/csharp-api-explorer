@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.15] - 2026-02-23
+
+### ✨ 优化 | Improvements
+
+- 更新 README.
+  Updated README。  
+
+---
+
 ## [1.0.14] - 2026-02-18
 
 ### ✨ 优化 | Improvements

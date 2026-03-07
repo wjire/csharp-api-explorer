@@ -2,6 +2,7 @@
     "extension.displayName": "C# API Explorer",
     "extension.description": "🌐 一个强大的 C# ASP.NET Core API 可视化浏览器，轻松解析、搜索、导航、分析并管理你的 API 路由。",
     "viewContainer.apiExplorer.title": "C# API Explorer",
+    "view.routesList.name": "路由",
     "command.refresh.title": "刷新路由",
     "command.search.title": "搜索路由",
     "command.clearSearch.title": "清除搜索",

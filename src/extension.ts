@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { ProjectGroupItem, RouteProvider, RouteTreeItem } from './routeProvider';
-import { RouteParser } from './routeParser';
 import { AliasManager } from './aliasManager';
-import { ProjectConfigCache } from './projectConfigCache';
 import { lang } from './languageManager';
+import { ProjectConfigCache } from './projectConfigCache';
+import { RouteParser } from './routeParser';
+import { ProjectGroupItem, RouteProvider, RouteTab, RouteTreeItem } from './routeProvider';
 
 const activeProjects = new Set<string>();
 const debugSessionProjectDirs = new Map<string, string>();
@@ -84,6 +84,10 @@ export function activate(context: vscode.ExtensionContext) {
         treeDataProvider: routeProvider,
         showCollapseAll: true  // 启用折叠所有按钮
     });
+
+    async function switchToTab(tab: RouteTab): Promise<void> {
+        routeProvider.setActiveTab(tab);
+    }
 
     let persistentViewMessage: string | undefined;
     let temporaryMessageTimer: NodeJS.Timeout | undefined;
@@ -191,7 +195,7 @@ export function activate(context: vscode.ExtensionContext) {
                 }
 
                 routeProvider.setRoutes(routes);
-                setViewMessage(lang.t('route.found', routes.length));
+                setViewMessage(undefined);
             }
         } catch (error) {
             setViewMessage(lang.t('route.parseFailed', formatErrorMessage(error)));
@@ -200,6 +204,18 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     // 注册命令：刷新
+    context.subscriptions.push(
+        vscode.commands.registerCommand('csharpApiExplorer.switchToFavorites', async () => {
+            await switchToTab('favorites');
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('csharpApiExplorer.switchToAll', async () => {
+            await switchToTab('all');
+        })
+    );
+
     context.subscriptions.push(
         vscode.commands.registerCommand('csharpApiExplorer.refresh', async () => {
             routeProvider.setSearchText(''); // 清空搜索条件
@@ -224,7 +240,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册命令：清除搜索
     context.subscriptions.push(
-        vscode.commands.registerCommand('csharpApiExplorer.clearSearch', () => {
+        vscode.commands.registerCommand('csharpApiExplorer.clearSearch', async () => {
             routeProvider.setSearchText('');
         })
     );

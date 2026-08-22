@@ -2,7 +2,7 @@
     "name": "csharp-api-explorer",
     "displayName": "%extension.displayName%",
     "description": "%extension.description%",
-    "version": "1.0.17",
+    "version": "1.0.18",
     "publisher": "dankit",
     "icon": "resources/icons/icon.png",
     "repository": {
@@ -68,14 +68,6 @@
             ]
         },
         "commands": [
-            {
-                "command": "csharpApiExplorer.switchToFavorites",
-                "title": "%command.switchToFavorites.title%"
-            },
-            {
-                "command": "csharpApiExplorer.switchToAll",
-                "title": "%command.switchToAll.title%"
-            },
             {
                 "command": "csharpApiExplorer.refresh",
                 "title": "%command.refresh.title%",
@@ -188,11 +180,6 @@
                         "**/wwwroot/lib/**"
                     ],
                     "description": "%config.excludePatterns.description%"
-                },
-                "csharpApiExplorer.sortAliasFirst": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "%config.sortAliasFirst.description%"
                 },
                 "csharpApiExplorer.sortByRoutePath": {
                     "type": "boolean",

@@ -1,14 +1,11 @@
 import * as vscode from 'vscode';
-import { AliasManager } from './aliasManager';
 import { lang } from './languageManager';
 import { RouteInfo } from './models/route';
 
 /**
  * 树节点类型
  */
-type TreeNode = TabSwitchItem | FavoriteAliasGroupItem | ProjectGroupItem | ControllerGroupItem | RouteTreeItem;
-
-export type RouteTab = 'favorites' | 'all';
+type TreeNode = AliasGroupItem | ProjectGroupItem | ControllerGroupItem | RouteTreeItem;
 
 /**
  * 路由TreeView数据提供者
@@ -19,14 +16,12 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
 
     private routes: RouteInfo[] = [];
     private filteredRoutes: RouteInfo[] = [];
-    private allSearchText: string = '';
-    private favoritesSearchText: string = '';
-    private previousAllSearchText: string = '';
-    private activeTab: RouteTab = 'favorites';
+    private searchText: string = '';
+    private previousSearchText: string = '';
 
     // 树节点分组缓存
-    private favoriteGroupsCache?: FavoriteAliasGroupItem[];
-    private favoriteGroupRoutesCache = new Map<string, RouteInfo[]>();
+    private aliasGroupsCache?: AliasGroupItem[];
+    private aliasGroupRoutesCache = new Map<string, RouteInfo[]>();
     private projectGroupsCache?: ProjectGroupItem[];
     private controllerGroupsCache = new Map<string, ControllerGroupItem[]>();
 
@@ -34,54 +29,14 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 获取当前搜索文本
      */
     getSearchText(): string {
-        return this.activeTab === 'favorites' ? this.favoritesSearchText : this.allSearchText;
+        return this.searchText;
     }
 
     /**
      * 是否正在搜索
      */
     isSearching(): boolean {
-        return this.activeTab === 'favorites'
-            ? this.favoritesSearchText.trim().length > 0
-            : this.allSearchText.trim().length > 0;
-    }
-
-    constructor(
-        private aliasManager: AliasManager
-    ) { }
-
-    /**
-     * 设置当前标签页
-     */
-    setActiveTab(tab: RouteTab): void {
-        if (this.activeTab === tab) {
-            return;
-        }
-
-        this.activeTab = tab;
-        this.clearTreeCache();
-        this.refresh();
-    }
-
-    /**
-     * 获取当前标签页
-     */
-    getActiveTab(): RouteTab {
-        return this.activeTab;
-    }
-
-    /**
-     * 获取当前常用路由数量（有别名）
-     */
-    getFavoriteRouteCount(): number {
-        return this.getFavoriteRoutes().length;
-    }
-
-    /**
-     * 获取全部标签当前可见数量（受搜索影响）
-     */
-    getAllVisibleRouteCount(): number {
-        return this.filteredRoutes.length;
+        return this.searchText.trim().length > 0;
     }
 
     /**
@@ -96,8 +51,8 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      */
     setRoutes(routes: RouteInfo[]): void {
         this.routes = routes;
-        this.previousAllSearchText = '';
-        this.applyAllFilter();
+        this.previousSearchText = '';
+        this.applyFilter();
         this.clearTreeCache();
         this.refresh();
     }
@@ -106,17 +61,8 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 设置搜索文本
      */
     setSearchText(text: string): void {
-        const normalizedText = text.toLowerCase();
-
-        if (this.activeTab === 'favorites') {
-            this.favoritesSearchText = normalizedText;
-            this.clearTreeCache();
-            this.refresh();
-            return;
-        }
-
-        this.allSearchText = normalizedText;
-        this.applyAllFilter();
+        this.searchText = text.toLowerCase();
+        this.applyFilter();
         this.clearTreeCache();
         this.refresh();
     }
@@ -124,25 +70,24 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     /**
      * 应用过滤（支持增量搜索优化）
      */
-    private applyAllFilter(): void {
-        if (!this.allSearchText) {
+    private applyFilter(): void {
+        if (!this.searchText) {
             this.filteredRoutes = [...this.routes];
-            this.previousAllSearchText = '';
+            this.previousSearchText = '';
         } else {
             // 增量搜索优化：如果新搜索词是上次搜索词的扩展，则在已过滤结果中搜索
             const canUseIncremental =
-                this.previousAllSearchText &&
-                this.allSearchText.startsWith(this.previousAllSearchText) &&
+                this.previousSearchText &&
+                this.searchText.startsWith(this.previousSearchText) &&
                 this.filteredRoutes.length > 0;
 
             const sourceRoutes = canUseIncremental ? this.filteredRoutes : this.routes;
 
-            this.filteredRoutes = sourceRoutes.filter(route => this.matchesSearch(route, this.allSearchText));
+            this.filteredRoutes = sourceRoutes.filter(route => this.matchesSearch(route, this.searchText));
 
-            this.previousAllSearchText = this.allSearchText;
+            this.previousSearchText = this.searchText;
         }
 
-        // 排序：有别名的排在前面
         this.sortRoutes();
     }
 
@@ -164,16 +109,16 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 清除树节点分组缓存
      */
     private clearTreeCache(): void {
-        this.favoriteGroupsCache = undefined;
-        this.favoriteGroupRoutesCache.clear();
+        this.aliasGroupsCache = undefined;
+        this.aliasGroupRoutesCache.clear();
         this.projectGroupsCache = undefined;
         this.controllerGroupsCache.clear();
     }
 
     /**
-     * 计算常用分组名称：取别名中第一个 -, :, _ 左侧作为分组名
+     * 计算别名分组名称：取别名中第一个 -, :, _ 左侧作为分组名
      */
-    private getFavoriteGroupName(alias: string): string {
+    private getAliasGroupName(alias: string): string {
         const trimmedAlias = alias.trim();
         const match = trimmedAlias.match(/[-:_]/);
         if (!match || match.index === undefined) {
@@ -185,33 +130,33 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     }
 
     /**
-     * 获取常用分组节点（带缓存）
+     * 获取别名分组节点（带缓存）
      */
-    private getFavoriteGroups(): FavoriteAliasGroupItem[] {
-        if (this.favoriteGroupsCache) {
-            return this.favoriteGroupsCache;
+    private getAliasGroups(): AliasGroupItem[] {
+        if (this.aliasGroupsCache) {
+            return this.aliasGroupsCache;
         }
 
         const groupedRoutes = new Map<string, RouteInfo[]>();
-        const favoriteRoutes = this.getFavoriteRoutes();
+        const aliasedRoutes = this.getAliasedRoutes();
 
-        for (const route of favoriteRoutes) {
+        for (const route of aliasedRoutes) {
             const alias = route.alias || '';
-            const groupName = this.getFavoriteGroupName(alias);
+            const groupName = this.getAliasGroupName(alias);
             if (!groupedRoutes.has(groupName)) {
                 groupedRoutes.set(groupName, []);
             }
             groupedRoutes.get(groupName)!.push(route);
         }
 
-        const groups: FavoriteAliasGroupItem[] = [];
+        const groups: AliasGroupItem[] = [];
         for (const [groupName, routes] of groupedRoutes.entries()) {
-            this.favoriteGroupRoutesCache.set(groupName, routes);
-            groups.push(new FavoriteAliasGroupItem(groupName, routes.length));
+            this.aliasGroupRoutesCache.set(groupName, routes);
+            groups.push(new AliasGroupItem(groupName, routes.length));
         }
 
         groups.sort((a, b) => a.groupName.localeCompare(b.groupName, undefined, { sensitivity: 'base' }));
-        this.favoriteGroupsCache = groups;
+        this.aliasGroupsCache = groups;
         return groups;
     }
 
@@ -221,21 +166,9 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     private sortRoutes(): void {
         // 读取排序配置
         const config = vscode.workspace.getConfiguration('csharpApiExplorer');
-        const sortAliasFirst = config.get<boolean>('sortAliasFirst', false);
         const sortByRoutePath = config.get<boolean>('sortByRoutePath', false);
 
         this.filteredRoutes.sort((a, b) => {
-            // 1. 如果启用了别名置顶，先按是否有别名排序
-            if (sortAliasFirst) {
-                const aHasAlias = !!a.alias;
-                const bHasAlias = !!b.alias;
-
-                if (aHasAlias !== bHasAlias) {
-                    return aHasAlias ? -1 : 1;
-                }
-            }
-
-            // 2. 根据配置决定后续排序方式
             if (sortByRoutePath) {
                 // 按路由路径字母顺序排序
                 return a.route.localeCompare(b.route);
@@ -247,13 +180,11 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
     }
 
     /**
-     * 获取常用路由（有别名）并按别名排序
+     * 获取有别名的路由并按别名排序
      */
-    private getFavoriteRoutes(): RouteInfo[] {
-        const searchText = this.favoritesSearchText;
-        return this.routes
-            .filter(route => !!route.alias && route.alias.trim().length > 0)
-            .filter(route => !searchText || this.matchesSearch(route, searchText))
+    private getAliasedRoutes(): RouteInfo[] {
+        return this.filteredRoutes
+            .filter(route => this.hasAlias(route))
             .sort((a, b) => {
                 const aAlias = (a.alias || '').toLowerCase();
                 const bAlias = (b.alias || '').toLowerCase();
@@ -264,6 +195,14 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
 
                 return a.route.localeCompare(b.route, undefined, { sensitivity: 'base' });
             });
+    }
+
+    private getRegularRoutes(): RouteInfo[] {
+        return this.filteredRoutes.filter(route => !this.hasAlias(route));
+    }
+
+    private hasAlias(route: RouteInfo): boolean {
+        return !!route.alias && route.alias.trim().length > 0;
     }
 
     /**
@@ -277,16 +216,9 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
             }
         }
 
-        // 在过滤后的路由列表中查找并更新
-        for (const filteredRouteInfo of this.filteredRoutes) {
-            if (filteredRouteInfo.route === route && filteredRouteInfo.httpVerb === httpVerb) {
-                filteredRouteInfo.alias = alias;
-            }
-        }
-
-        // 重新排序并刷新视图
-        this.sortRoutes();
-        // 清除树节点缓存
+        // 从完整路由列表重新过滤，确保别名变化立即反映到搜索结果中
+        this.previousSearchText = '';
+        this.applyFilter();
         this.clearTreeCache();
         this.refresh();
     }
@@ -302,31 +234,13 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 获取子节点
      */
     getChildren(element?: TreeNode): Promise<TreeNode[]> {
-        if (element instanceof TabSwitchItem) {
-            return Promise.resolve([]);
-        }
-
-        if (element instanceof FavoriteAliasGroupItem) {
-            const groupedRoutes = this.favoriteGroupRoutesCache.get(element.groupName) || [];
+        if (element instanceof AliasGroupItem) {
+            const groupedRoutes = this.aliasGroupRoutesCache.get(element.groupName) || [];
             return Promise.resolve(groupedRoutes.map(route => new RouteTreeItem(route)));
         }
 
-        const tabs: TabSwitchItem[] = [
-            new TabSwitchItem('favorites', this.activeTab === 'favorites', this.getFavoriteRouteCount()),
-            new TabSwitchItem('all', this.activeTab === 'all', this.getAllVisibleRouteCount())
-        ];
-
-        if (this.activeTab === 'favorites') {
-            if (element) {
-                return Promise.resolve([]);
-            }
-
-            return Promise.resolve([...tabs, ...this.getFavoriteGroups()]);
-        }
-
         if (!element) {
-            // 根节点：返回项目分组
-            return Promise.resolve([...tabs, ...this.getProjectGroups()]);
+            return Promise.resolve([...this.getAliasGroups(), ...this.getProjectGroups()]);
         }
 
         if (element instanceof ProjectGroupItem) {
@@ -338,6 +252,7 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
             // 控制器分组节点：返回该控制器下的路由
             const controllerRoutes = this.filteredRoutes
                 .filter(route =>
+                    !this.hasAlias(route) &&
                     route.projectPath === element.projectPath &&
                     route.controller === element.controllerName
                 )
@@ -353,22 +268,14 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 获取父节点（用于支持reveal方法）
      */
     getParent(element: TreeNode): vscode.ProviderResult<TreeNode> {
-        if (element instanceof TabSwitchItem) {
-            return null;
-        }
-
-        if (this.activeTab === 'favorites') {
-            if (element instanceof RouteTreeItem) {
+        if (element instanceof RouteTreeItem) {
+            if (this.hasAlias(element.routeInfo)) {
                 const alias = element.routeInfo.alias || '';
-                const groupName = this.getFavoriteGroupName(alias);
-                const favoriteGroups = this.getFavoriteGroups();
-                return favoriteGroups.find(group => group.groupName === groupName);
+                const groupName = this.getAliasGroupName(alias);
+                const aliasGroups = this.getAliasGroups();
+                return aliasGroups.find(group => group.groupName === groupName);
             }
 
-            return null;
-        }
-
-        if (element instanceof RouteTreeItem) {
             // 路由节点的父节点是控制器分组
             const projectPath = element.routeInfo.projectPath || 'Unknown';
             const controllerGroups = this.getControllerGroups(projectPath);
@@ -398,7 +305,7 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
         // 按项目路径分组
         const projectMap = new Map<string, RouteInfo[]>();
 
-        for (const route of this.filteredRoutes) {
+        for (const route of this.getRegularRoutes()) {
             const projectPath = route.projectPath || 'Unknown';
             if (!projectMap.has(projectPath)) {
                 projectMap.set(projectPath, []);
@@ -408,9 +315,9 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
 
         // 创建项目分组节点
         const groups: ProjectGroupItem[] = [];
-        const isSearching = this.allSearchText.trim().length > 0;
+        const isSearching = this.searchText.trim().length > 0;
         for (const [projectPath, routes] of projectMap.entries()) {
-            groups.push(new ProjectGroupItem(projectPath, routes.length, isSearching, this.allSearchText));
+            groups.push(new ProjectGroupItem(projectPath, routes.length, isSearching, this.searchText));
         }
 
         // 按项目名称排序
@@ -437,7 +344,7 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
 
         // 缓存未命中，重新计算
         // 获取该项目下的所有路由
-        const projectRoutes = this.filteredRoutes.filter(
+        const projectRoutes = this.getRegularRoutes().filter(
             route => route.projectPath === projectPath
         );
 
@@ -453,9 +360,9 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
 
         // 创建控制器分组节点
         const groups: ControllerGroupItem[] = [];
-        const isSearching = this.allSearchText.trim().length > 0;
+        const isSearching = this.searchText.trim().length > 0;
         for (const [controllerName, routes] of controllerMap.entries()) {
-            groups.push(new ControllerGroupItem(projectPath, controllerName, routes.length, isSearching, this.allSearchText));
+            groups.push(new ControllerGroupItem(projectPath, controllerName, routes.length, isSearching, this.searchText));
         }
 
         // 按控制器名称排序
@@ -482,11 +389,7 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 获取所有需要展开的节点（项目分组和控制器分组）
      */
     async getAllExpandableNodes(): Promise<TreeNode[]> {
-        if (this.activeTab === 'favorites') {
-            return this.getFavoriteGroups();
-        }
-
-        const nodes: TreeNode[] = [];
+        const nodes: TreeNode[] = [...this.getAliasGroups()];
 
         // 获取所有项目分组
         const projectGroups = this.getProjectGroups();
@@ -503,9 +406,9 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
 }
 
 /**
- * 常用分组节点
+ * 别名分组节点
  */
-export class FavoriteAliasGroupItem extends vscode.TreeItem {
+export class AliasGroupItem extends vscode.TreeItem {
     constructor(
         public readonly groupName: string,
         public readonly routeCount: number
@@ -514,31 +417,8 @@ export class FavoriteAliasGroupItem extends vscode.TreeItem {
 
         this.description = `${routeCount}`;
         this.tooltip = '';
-        this.contextValue = 'favoriteGroup';
+        this.contextValue = 'aliasGroup';
         this.iconPath = new vscode.ThemeIcon('folder-library');
-    }
-}
-
-/**
- * 顶部标签切换节点（伪标签）
- */
-export class TabSwitchItem extends vscode.TreeItem {
-    constructor(
-        public readonly tab: RouteTab,
-        isActive: boolean,
-        routeCount: number
-    ) {
-        const title = tab === 'favorites' ? lang.t('tab.favorites') : lang.t('tab.all');
-        const marker = isActive ? '◉' : '○';
-        super(`${marker} ${title}`, vscode.TreeItemCollapsibleState.None);
-
-        this.description = `${routeCount}`;
-        this.tooltip = '';
-        this.contextValue = 'tabSwitch';
-        this.command = {
-            command: tab === 'favorites' ? 'csharpApiExplorer.switchToFavorites' : 'csharpApiExplorer.switchToAll',
-            title: title
-        };
     }
 }
 

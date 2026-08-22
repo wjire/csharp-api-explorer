@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.18] - 2026-08-22
+
+### ⚙️ 行为调整 | Behavior Changes
+
+- 🧭 **恢复单一路由视图**：移除“常用 / 全部”双视图切换，所有路由在同一棵树中展示。
+  **Restored unified route view**: Removed the Favorites / All switch so all routes are displayed in one tree.
+
+- 📌 **别名路由固定置顶并分组**：有别名的路由固定显示在顶部，继续按别名中第一个 `-`、`:`、`_` 左侧文本分组；无别名路由在下方按项目和控制器展示，且不会重复出现。
+  **Aliased routes pinned and grouped**: Routes with aliases are pinned to the top and grouped by the text before the first `-`, `:`, or `_`; routes without aliases remain grouped by project and controller below without duplication.
+
+- 🔎 **统一搜索范围**：搜索和清空搜索现在作用于整个路由视图。
+  **Unified search scope**: Search and clear-search now apply to the entire route view.
+
+---
+
 ## [1.0.17] - 2026-07-24
 
 ### ✨ 新功能 | New Features

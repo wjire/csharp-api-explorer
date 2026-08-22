@@ -28,7 +28,6 @@ const TEXT_MAP = {
         // 路由相关
         'route.parsing': '正在解析路由...',
         'route.found': '找到 {0} 个路由',
-        'route.foundFavorites': '常用 {0} 个路由',
         'route.parseFailed': '解析路由失败: {0}',
         'route.autoRefreshFailed': '自动刷新路由失败:',
         'route.skipNotDotnet': '当前工作区不是 .NET 项目（未检测到 .csproj），已跳过路由扫描',
@@ -37,10 +36,6 @@ const TEXT_MAP = {
         'search.prompt': '搜索路由',
         'search.placeholder': '输入路由路径、控制器、Action或别名',
         'search.result': '🔍 "{0}" - {1} 个路由',
-
-        // 标签
-        'tab.favorites': '常用',
-        'tab.all': '全部',
 
         // 别名
         'alias.setPrompt': '设置别名',
@@ -91,7 +86,6 @@ const TEXT_MAP = {
         // Route
         'route.parsing': 'Parsing routes...',
         'route.found': 'Found {0} routes',
-        'route.foundFavorites': 'Favorites: {0} routes',
         'route.parseFailed': 'Failed to parse routes: {0}',
         'route.autoRefreshFailed': 'Auto refresh routes failed:',
         'route.skipNotDotnet': 'Current workspace is not a .NET project (no .csproj detected), route scanning skipped',
@@ -100,10 +94,6 @@ const TEXT_MAP = {
         'search.prompt': 'Search Routes',
         'search.placeholder': 'Enter route path, controller, action or alias',
         'search.result': '🔍 "{0}" - {1} routes',
-
-        // Tabs
-        'tab.favorites': 'Favorites',
-        'tab.all': 'All',
 
         // Alias
         'alias.setPrompt': 'Set Alias',

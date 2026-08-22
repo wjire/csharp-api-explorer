@@ -3,7 +3,7 @@ import { AliasManager } from './aliasManager';
 import { lang } from './languageManager';
 import { ProjectConfigCache } from './projectConfigCache';
 import { RouteParser } from './routeParser';
-import { ProjectGroupItem, RouteProvider, RouteTab, RouteTreeItem } from './routeProvider';
+import { ProjectGroupItem, RouteProvider, RouteTreeItem } from './routeProvider';
 
 const activeProjects = new Set<string>();
 const debugSessionProjectDirs = new Map<string, string>();
@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
     const projectConfigCache = new ProjectConfigCache();
     const aliasManager = new AliasManager(workspaceRoot);
     const routeParser = new RouteParser(projectConfigCache);
-    const routeProvider = new RouteProvider(aliasManager);
+    const routeProvider = new RouteProvider();
 
     context.subscriptions.push(
         vscode.debug.onDidStartDebugSession((session) => {
@@ -84,10 +84,6 @@ export function activate(context: vscode.ExtensionContext) {
         treeDataProvider: routeProvider,
         showCollapseAll: true  // 启用折叠所有按钮
     });
-
-    async function switchToTab(tab: RouteTab): Promise<void> {
-        routeProvider.setActiveTab(tab);
-    }
 
     let persistentViewMessage: string | undefined;
     let temporaryMessageTimer: NodeJS.Timeout | undefined;
@@ -204,18 +200,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     // 注册命令：刷新
-    context.subscriptions.push(
-        vscode.commands.registerCommand('csharpApiExplorer.switchToFavorites', async () => {
-            await switchToTab('favorites');
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('csharpApiExplorer.switchToAll', async () => {
-            await switchToTab('all');
-        })
-    );
-
     context.subscriptions.push(
         vscode.commands.registerCommand('csharpApiExplorer.refresh', async () => {
             routeProvider.setSearchText(''); // 清空搜索条件

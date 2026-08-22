@@ -4,10 +4,6 @@
     "viewContainer.apiExplorer.title": "C# API Explorer",
     "view.routesList.name": "Routes",
     "command.refresh.title": "Refresh Routes",
-    "command.switchToFavorites.title": "Favorites",
-    "command.switchToAll.title": "All",
-    "command.switchToFavoritesActive.title": "● Favorites",
-    "command.switchToAllActive.title": "● All",
     "command.search.title": "Search Routes",
     "command.clearSearch.title": "Clear Search",
     "command.expandAll.title": "Expand All",
@@ -18,7 +14,6 @@
     "command.runProject.title": "Run Project",
     "config.title": "C# API Explorer",
     "config.excludePatterns.description": "Files to exclude.",
-    "config.sortAliasFirst.description": "Whether routes with aliases should be placed at the top.",
     "config.sortByRoutePath.description": "Whether to sort routes by path alphabetically; otherwise, keep file order.",
     "config.defaultApiVersion.description": "Default API version when the controller has no [ApiVersion] attribute (default: '1.0', same as ASP.NET Core official default)."
 }

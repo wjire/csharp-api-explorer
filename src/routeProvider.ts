@@ -413,7 +413,7 @@ export class AliasGroupItem extends vscode.TreeItem {
         public readonly groupName: string,
         public readonly routeCount: number
     ) {
-        super(groupName, vscode.TreeItemCollapsibleState.Expanded);
+        super(groupName, vscode.TreeItemCollapsibleState.Collapsed);
 
         this.description = `${routeCount}`;
         this.tooltip = '';

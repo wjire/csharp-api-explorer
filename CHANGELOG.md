@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.19] - 2026-09-03
+
+### ⚙️ 行为调整 | Behavior Changes
+
+- 🔎 **搜索时忽略 URL 查询参数**：粘贴带有查询参数的 URL 时，自动移除 `?` 及其后的内容，并使用 URL 路径搜索路由。
+  **Ignore URL query parameters in search**: When pasting a URL with query parameters, automatically removes `?` and everything after it, then searches routes using the URL path.
+
+---
+
 ## [1.0.18] - 2026-08-22
 
 ### ⚙️ 行为调整 | Behavior Changes

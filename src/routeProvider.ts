@@ -61,7 +61,7 @@ export class RouteProvider implements vscode.TreeDataProvider<TreeNode> {
      * 设置搜索文本
      */
     setSearchText(text: string): void {
-        this.searchText = text.toLowerCase();
+        this.searchText = text.split('?', 1)[0].trim().toLowerCase();
         this.applyFilter();
         this.clearTreeCache();
         this.refresh();
